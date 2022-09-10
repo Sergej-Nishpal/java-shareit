@@ -1,8 +1,8 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.user.dto;
 
 import lombok.*;
-import ru.practicum.shareit.user.model.User;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class ItemDto {
+public class UserDto {
 
     @NotNull
     @NotEmpty
@@ -20,12 +20,6 @@ public class ItemDto {
 
     @NotNull
     @NotEmpty
-    private String description;
-
-    private boolean available;
-
-    @NotNull
-    private User owner;
-
-    private Long request;
+    @Email(message = "Указан некорректный email!")
+    private String email;
 }

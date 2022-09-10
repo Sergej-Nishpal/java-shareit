@@ -1,11 +1,10 @@
-package ru.practicum.shareit.request;
+package ru.practicum.shareit.user.model;
 
 import lombok.*;
-import ru.practicum.shareit.user.model.User;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -14,16 +13,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class ItemRequest {
+public class User {
     private Long id;
 
     @NotNull
     @NotEmpty
-    private String description;
+    private String name;
 
     @NotNull
-    private User requestor;
-
-    @NotNull
-    private LocalDateTime created;
+    @NotEmpty
+    @Email(message = "Указан некорректный email!")
+    private String email;
 }
