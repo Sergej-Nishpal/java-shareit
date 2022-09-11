@@ -8,7 +8,7 @@ public class ItemMapper {
     }
 
     public static ItemDto toItemDto(Item item) {
-        return new ItemDto.ItemDtoBuilder()
+        return ItemDto.builder()
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.isAvailable())
