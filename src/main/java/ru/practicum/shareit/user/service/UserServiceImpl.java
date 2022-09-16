@@ -33,6 +33,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserById(Long userId) {
         if (userId <= 0) {
+            log.error("Передан некорректный id пользователя!");
             throw new ValidationException("id должен быть больше нуля!");
         }
 
@@ -43,6 +44,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(UserDto userDto) {
         if (emailExists(userDto.getEmail())) {
+            log.error("Передан существующий email!");
             throw new SuchEmailExistsException("Указанный email уже существует!");
         }
 
@@ -53,14 +55,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto updateUser(Long userId, UserDto userDto) {
         if (userId <= 0) {
+            log.error("Передан некорректный id пользователя!");
             throw new ValidationException("id должен быть больше нуля!");
         }
 
         if (userIdNotExists(userId)) {
+            log.error("Передан несуществующий id пользователя!");
             throw new UserNotFoundException("Пользователь с id = " + userId + " не найден!");
         }
 
         if (userDto.getEmail() != null && emailExists(userDto.getEmail())) {
+            log.error("Передан существующий email!");
             throw new SuchEmailExistsException("Указанный email уже существует!");
         }
 
@@ -71,6 +76,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(Long userId) {
         if (userIdNotExists(userId)) {
+            log.error("Передан несуществующий id пользователя!");
             throw new UserNotFoundException("Пользователь с id = " + userId + " не найден!");
         }
 

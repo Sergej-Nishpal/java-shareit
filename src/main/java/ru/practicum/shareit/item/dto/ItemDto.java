@@ -2,9 +2,9 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.*;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.validation.Marker;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 
 @Getter
 @Setter
@@ -12,20 +12,21 @@ import javax.validation.constraints.NotNull;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = "id")
 public class ItemDto {
 
-    @NotNull
-    @NotEmpty
+    @Null(groups = Marker.OnCreate.class)
+    @Min(groups = Marker.OnUpdate.class, value = 1L)
+    private Long id;
+
+    @NotBlank(groups = Marker.OnCreate.class)
     private String name;
 
-    @NotNull
-    @NotEmpty
+    @NotBlank(groups = Marker.OnCreate.class)
     private String description;
 
-    private boolean available;
+    @NotNull(groups = Marker.OnCreate.class)
+    private Boolean available;
 
-    @NotNull
     private User owner;
-
-    private Long request;
 }

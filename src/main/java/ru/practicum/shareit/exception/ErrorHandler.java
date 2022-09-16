@@ -6,11 +6,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.validation.ConstraintViolationException;
+
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
 
-    @ExceptionHandler({ValidationException.class})
+    @ExceptionHandler({ValidationException.class, ConstraintViolationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidation(final RuntimeException e) {
         log.error("400 - Ошибка валидации: {} ", e.getMessage(), e);
@@ -21,6 +23,13 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleEmailExists(final RuntimeException e) {
         log.error("409 - Конфликт данных: {} ", e.getMessage(), e);
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler({UnauthorizedOperationException.class})
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleUnauthorizedOperation(final RuntimeException e) {
+        log.error("403 - Доступ запрещён: {} ", e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 

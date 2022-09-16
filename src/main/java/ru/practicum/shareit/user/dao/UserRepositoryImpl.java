@@ -1,16 +1,16 @@
 package ru.practicum.shareit.user.dao;
 
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
+@Repository
 public class UserRepositoryImpl implements UserRepository {
     private final Map<Long, User> users = new HashMap<>();
-    private long repositoryIdCounter;
+    private long userRepoIdCounter;
 
     @Override
     public Collection<User> findAllUsers() {
@@ -52,6 +52,6 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     private long getNextId() {
-        return ++repositoryIdCounter;
+        return ++userRepoIdCounter;
     }
 }
