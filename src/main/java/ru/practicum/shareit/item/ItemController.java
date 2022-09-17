@@ -27,8 +27,8 @@ public class ItemController {
     @PatchMapping("/{itemId}")
     @Validated({Marker.OnUpdate.class})
     public ItemDto updateItem(@RequestHeader("X-Sharer-User-Id") long userId,
-                           @PathVariable long itemId,
-                           @RequestBody @Valid ItemDto itemDto) {
+                              @PathVariable long itemId,
+                              @RequestBody @Valid ItemDto itemDto) {
         return itemService.updateItem(userId, itemId, itemDto);
     }
 

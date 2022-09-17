@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.ItemNotFoundException;
 import ru.practicum.shareit.exception.UnauthorizedOperationException;
 import ru.practicum.shareit.exception.UserNotFoundException;
 import ru.practicum.shareit.item.dao.ItemRepository;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+
     @Override
     public ItemDto addItem(Long userId, ItemDto itemDto) {
         validateUserExists(userId);
@@ -44,6 +46,10 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto getItemById(long userId, long itemId) {
         log.debug("Пользователь с id = {} запрашивает информацию о вещи с id = {}.", userId, itemId);
         Item item = itemRepository.getItemById(itemId);
+        if (item == null) {
+            log.error("Вещь с id = {} не найдена!", itemId);
+            throw new ItemNotFoundException("Вещь с id = " + itemId + " не найдена!");
+        }
         return ItemMapper.toItemDto(item);
     }
 

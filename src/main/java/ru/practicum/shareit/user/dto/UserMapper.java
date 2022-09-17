@@ -3,7 +3,6 @@ package ru.practicum.shareit.user.dto;
 import ru.practicum.shareit.user.model.User;
 
 public class UserMapper {
-    public static final String EMPTY_STRING = "";
 
     private UserMapper() {
 
@@ -19,8 +18,9 @@ public class UserMapper {
 
     public static User toUser(UserDto userDto) {
         return User.builder()
-                .name(userDto.getName() != null ? userDto.getName() : EMPTY_STRING)
-                .email(userDto.getEmail() != null ? userDto.getEmail() : EMPTY_STRING)
+                .id(userDto.getId())
+                .name(userDto.getName())
+                .email(userDto.getEmail())
                 .build();
     }
 }

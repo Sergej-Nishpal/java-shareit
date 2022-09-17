@@ -12,7 +12,7 @@ import javax.validation.ConstraintViolationException;
 @RestControllerAdvice
 public class ErrorHandler {
 
-    @ExceptionHandler({ValidationException.class, ConstraintViolationException.class})
+    @ExceptionHandler({ConstraintViolationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidation(final RuntimeException e) {
         log.error("400 - Ошибка валидации: {} ", e.getMessage(), e);

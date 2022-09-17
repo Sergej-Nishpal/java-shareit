@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.SuchEmailExistsException;
 import ru.practicum.shareit.exception.UserNotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
@@ -19,10 +18,14 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+    private static final String USER_WITH_ID = "Пользователь с id = ";
+    private static final String NOT_FOUND = " не найден!";
+
     private final UserRepository userRepository;
 
     @Override
     public Collection<UserDto> findAllUsers() {
+        log.debug("Запросили всех пользователей из БД.");
         return userRepository
                 .findAllUsers()
                 .stream()
@@ -32,12 +35,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserById(Long userId) {
-        if (userId <= 0) {
-            log.error("Передан некорректный id пользователя!");
-            throw new ValidationException("id должен быть больше нуля!");
+        User user = userRepository.getUserById(userId);
+        if (user == null) {
+            log.error("Запросили всех пользователей из БД.");
+            throw new UserNotFoundException(USER_WITH_ID + userId + NOT_FOUND);
         }
 
-        User user = userRepository.getUserById(userId);
+        log.debug("Запросили пользователя с id = {}.", userId);
         return UserMapper.toUserDto(user);
     }
 
@@ -49,19 +53,15 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = userRepository.createUser(UserMapper.toUser(userDto));
+        log.debug("Создали пользователя с id = {}.", user.getId());
         return UserMapper.toUserDto(user);
     }
 
     @Override
     public UserDto updateUser(Long userId, UserDto userDto) {
-        if (userId <= 0) {
-            log.error("Передан некорректный id пользователя!");
-            throw new ValidationException("id должен быть больше нуля!");
-        }
-
         if (userIdNotExists(userId)) {
             log.error("Передан несуществующий id пользователя!");
-            throw new UserNotFoundException("Пользователь с id = " + userId + " не найден!");
+            throw new UserNotFoundException(USER_WITH_ID + userId + NOT_FOUND);
         }
 
         if (userDto.getEmail() != null && emailExists(userDto.getEmail())) {
@@ -70,6 +70,7 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = userRepository.updateUser(userId, UserMapper.toUser(userDto));
+        log.debug("Обновили пользователя с id = {}.", user.getId());
         return UserMapper.toUserDto(user);
     }
 
@@ -77,10 +78,11 @@ public class UserServiceImpl implements UserService {
     public void deleteUserById(Long userId) {
         if (userIdNotExists(userId)) {
             log.error("Передан несуществующий id пользователя!");
-            throw new UserNotFoundException("Пользователь с id = " + userId + " не найден!");
+            throw new UserNotFoundException(USER_WITH_ID + userId + NOT_FOUND);
         }
 
         userRepository.deleteUserById(userId);
+        log.debug("Удалили пользователя с id = {}.", userId);
     }
 
     private boolean emailExists(String email) {
