@@ -12,8 +12,8 @@ import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dao.UserRepository;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -24,28 +24,28 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
 
     @Override
-    public ItemDto addItem(Long userId, ItemDto itemDto) {
+    public ItemDto add(Long userId, ItemDto itemDto) {
         validateUserExists(userId);
         Item item = ItemMapper.toItem(itemDto);
-        item.setOwner(userRepository.getUserById(userId));
-        final Item savedItem = itemRepository.addItem(userId, item);
+        item.setOwner(userRepository.getById(userId));
+        final Item savedItem = itemRepository.add(userId, item);
         log.debug("Владелец с id = {} добавил новую вещь.}", userId);
         return ItemMapper.toItemDto(savedItem);
     }
 
     @Override
-    public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
+    public ItemDto update(long userId, long itemId, ItemDto itemDto) {
         validateUserExists(userId);
         validateUsersItem(userId, itemId);
         log.debug("Владелец с id = {} обновляет вещь с id = {}", userId, itemId);
-        final Item item = itemRepository.updateItem(userId, itemId, ItemMapper.toItem(itemDto));
+        final Item item = itemRepository.update(userId, itemId, ItemMapper.toItem(itemDto));
         return ItemMapper.toItemDto(item);
     }
 
     @Override
-    public ItemDto getItemById(long userId, long itemId) {
+    public ItemDto getById(long userId, long itemId) {
         log.debug("Пользователь с id = {} запрашивает информацию о вещи с id = {}.", userId, itemId);
-        Item item = itemRepository.getItemById(itemId);
+        Item item = itemRepository.getById(itemId);
         if (item == null) {
             log.error("Вещь с id = {} не найдена!", itemId);
             throw new ItemNotFoundException("Вещь с id = " + itemId + " не найдена!");
@@ -54,22 +54,22 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getItems(long userId) {
+    public Collection<ItemDto> getAll(long userId) {
         log.debug("Владелец с id = {} запросил список своих вещей.", userId);
-        return itemRepository.getItems(userId)
+        return itemRepository.getAll(userId)
                 .stream()
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ItemDto> getItemsByText(long userId, String text) {
+    public Collection<ItemDto> getByText(long userId, String text) {
         if (text.isEmpty()) {
             log.debug("Текст для поиска не содержит символов!");
             return Collections.emptyList();
         } else {
             log.debug("Ищем вещи по поисковому запросу \"{}\".", text);
-            return itemRepository.getItemsByText(text)
+            return itemRepository.getByText(text)
                     .stream()
                     .map(ItemMapper::toItemDto)
                     .collect(Collectors.toList());
@@ -77,15 +77,15 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void validateUserExists(long id) {
-        if (userRepository.getUserById(id) == null) {
+        if (userRepository.getById(id) == null) {
             log.error("Пользователь с id = {} не найден в БД.", id);
             throw new UserNotFoundException("Пользователь с id = " + id + " не найден!");
         }
     }
 
     private void validateUsersItem(long userId, long itemId) {
-        if (itemRepository.getItems(userId) == null
-                || itemRepository.getItems(userId)
+        if (itemRepository.getAll(userId) == null
+                || itemRepository.getAll(userId)
                 .stream()
                 .map(Item::getId)
                 .noneMatch(id -> id == itemId)) {

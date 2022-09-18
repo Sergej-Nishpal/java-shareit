@@ -19,33 +19,33 @@ public class ItemController {
 
     @PostMapping
     @Validated({Marker.OnCreate.class})
-    public ItemDto addItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                           @RequestBody @Valid ItemDto itemDto) {
-        return itemService.addItem(userId, itemDto);
+    public ItemDto add(@RequestHeader("X-Sharer-User-Id") Long userId,
+                       @RequestBody @Valid ItemDto itemDto) {
+        return itemService.add(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
     @Validated({Marker.OnUpdate.class})
-    public ItemDto updateItem(@RequestHeader("X-Sharer-User-Id") long userId,
-                              @PathVariable long itemId,
-                              @RequestBody @Valid ItemDto itemDto) {
-        return itemService.updateItem(userId, itemId, itemDto);
+    public ItemDto update(@RequestHeader("X-Sharer-User-Id") long userId,
+                          @PathVariable long itemId,
+                          @RequestBody @Valid ItemDto itemDto) {
+        return itemService.update(userId, itemId, itemDto);
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@RequestHeader("X-Sharer-User-Id") long userId,
-                               @PathVariable long itemId) {
-        return itemService.getItemById(userId, itemId);
+    public ItemDto getById(@RequestHeader("X-Sharer-User-Id") long userId,
+                           @PathVariable long itemId) {
+        return itemService.getById(userId, itemId);
     }
 
     @GetMapping
-    public Collection<ItemDto> getItems(@RequestHeader("X-Sharer-User-Id") long userId) {
-        return itemService.getItems(userId);
+    public Collection<ItemDto> getAll(@RequestHeader("X-Sharer-User-Id") long userId) {
+        return itemService.getAll(userId);
     }
 
     @GetMapping("/search")
-    public Collection<ItemDto> getItemsByText(@RequestHeader("X-Sharer-User-Id") long userId,
-                                              @RequestParam(name = "text") String text) {
-        return itemService.getItemsByText(userId, text);
+    public Collection<ItemDto> getByText(@RequestHeader("X-Sharer-User-Id") long userId,
+                                         @RequestParam(name = "text") String text) {
+        return itemService.getByText(userId, text);
     }
 }

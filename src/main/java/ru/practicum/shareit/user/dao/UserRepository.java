@@ -6,13 +6,13 @@ import java.util.Collection;
 
 public interface UserRepository {
 
-    Collection<User> findAllUsers();
+    Collection<User> findAll();
 
-    User getUserById(Long userId);
+    User getById(Long userId);
 
-    User createUser(User user);
+    User create(User user);
 
-    User updateUser(Long userId, User user);
+    User update(Long userId, User user);
 
-    void deleteUserById(Long userId);
+    void deleteById(Long userId);
 }

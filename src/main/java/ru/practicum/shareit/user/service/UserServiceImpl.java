@@ -24,18 +24,18 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public Collection<UserDto> findAllUsers() {
+    public Collection<UserDto> findAll() {
         log.debug("Запросили всех пользователей из БД.");
         return userRepository
-                .findAllUsers()
+                .findAll()
                 .stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public UserDto getUserById(Long userId) {
-        User user = userRepository.getUserById(userId);
+    public UserDto getById(Long userId) {
+        User user = userRepository.getById(userId);
         if (user == null) {
             log.error("Запросили всех пользователей из БД.");
             throw new UserNotFoundException(USER_WITH_ID + userId + NOT_FOUND);
@@ -46,19 +46,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto createUser(UserDto userDto) {
+    public UserDto create(UserDto userDto) {
         if (emailExists(userDto.getEmail())) {
             log.error("Передан существующий email!");
             throw new SuchEmailExistsException("Указанный email уже существует!");
         }
 
-        User user = userRepository.createUser(UserMapper.toUser(userDto));
+        User user = userRepository.create(UserMapper.toUser(userDto));
         log.debug("Создали пользователя с id = {}.", user.getId());
         return UserMapper.toUserDto(user);
     }
 
     @Override
-    public UserDto updateUser(Long userId, UserDto userDto) {
+    public UserDto update(Long userId, UserDto userDto) {
         if (userIdNotExists(userId)) {
             log.error("Передан несуществующий id пользователя!");
             throw new UserNotFoundException(USER_WITH_ID + userId + NOT_FOUND);
@@ -69,31 +69,31 @@ public class UserServiceImpl implements UserService {
             throw new SuchEmailExistsException("Указанный email уже существует!");
         }
 
-        User user = userRepository.updateUser(userId, UserMapper.toUser(userDto));
+        User user = userRepository.update(userId, UserMapper.toUser(userDto));
         log.debug("Обновили пользователя с id = {}.", user.getId());
         return UserMapper.toUserDto(user);
     }
 
     @Override
-    public void deleteUserById(Long userId) {
+    public void deleteById(Long userId) {
         if (userIdNotExists(userId)) {
             log.error("Передан несуществующий id пользователя!");
             throw new UserNotFoundException(USER_WITH_ID + userId + NOT_FOUND);
         }
 
-        userRepository.deleteUserById(userId);
+        userRepository.deleteById(userId);
         log.debug("Удалили пользователя с id = {}.", userId);
     }
 
     private boolean emailExists(String email) {
-        Collection<User> users = userRepository.findAllUsers();
+        Collection<User> users = userRepository.findAll();
         return users.stream()
                 .map(User::getEmail)
                 .anyMatch(s -> Objects.equals(s, email));
     }
 
     private boolean userIdNotExists(Long userId) {
-        Collection<User> users = userRepository.findAllUsers();
+        Collection<User> users = userRepository.findAll();
         return users.stream()
                 .map(User::getId)
                 .noneMatch(s -> Objects.equals(s, userId));

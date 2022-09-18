@@ -13,29 +13,29 @@ public class UserRepositoryImpl implements UserRepository {
     private long userRepoIdCounter;
 
     @Override
-    public Collection<User> findAllUsers() {
+    public Collection<User> findAll() {
         return users.values();
     }
 
     @Override
-    public User getUserById(Long userId) {
+    public User getById(Long userId) {
         return users.get(userId);
     }
 
     @Override
-    public User createUser(User user) {
-        user.setId(getNextId());
+    public User create(User user) {
+        user.setId(++userRepoIdCounter);
         users.put(user.getId(), user);
         return user;
     }
 
     @Override
-    public User updateUser(Long userId, User user) {
+    public User update(Long userId, User user) {
         if (user.getId() == null) {
             user.setId(userId);
         }
 
-        User updatedUser = getUserById(userId);
+        User updatedUser = getById(userId);
 
         if (user.getName() != null) {
             updatedUser.setName(user.getName());
@@ -50,11 +50,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void deleteUserById(Long userId) {
+    public void deleteById(Long userId) {
         users.remove(userId);
-    }
-
-    private long getNextId() {
-        return ++userRepoIdCounter;
     }
 }

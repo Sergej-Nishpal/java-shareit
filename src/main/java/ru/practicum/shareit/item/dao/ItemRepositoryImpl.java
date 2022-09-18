@@ -12,8 +12,8 @@ public class ItemRepositoryImpl implements ItemRepository {
     private long itemRepoIdCounter;
 
     @Override
-    public Item addItem(long ownerId, Item item) {
-        item.setId(getNextId());
+    public Item add(long ownerId, Item item) {
+        item.setId(++itemRepoIdCounter);
         items.compute(ownerId, (userId, userItems) -> {
             if (userItems == null) {
                 userItems = new ArrayList<>();
@@ -25,12 +25,12 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public Item updateItem(long ownerId, long itemId, Item item) {
+    public Item update(long ownerId, long itemId, Item item) {
         if (item.getId() == null) {
             item.setId(itemId);
         }
 
-        Item updatedItem = getItemById(item.getId());
+        Item updatedItem = getById(item.getId());
         if (item.getName() != null) {
             updatedItem.setName(item.getName());
         }
@@ -47,7 +47,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public Item getItemById(long itemId) {
+    public Item getById(long itemId) {
         return items.values()
                 .stream()
                 .flatMap(Collection::stream)
@@ -56,21 +56,17 @@ public class ItemRepositoryImpl implements ItemRepository {
                 .orElse(null);
     }
 
-    public List<Item> getItems(long ownerId) {
+    public List<Item> getAll(long ownerId) {
         return items.get(ownerId);
     }
 
     @Override
-    public List<Item> getItemsByText(String text) {
+    public List<Item> getByText(String text) {
         return items.values()
                 .stream()
                 .flatMap(Collection::stream)
                 .filter(item -> checkContainsText(item, text) && item.getAvailable())
                 .collect(Collectors.toList());
-    }
-
-    private long getNextId() {
-        return ++itemRepoIdCounter;
     }
 
     private boolean checkContainsText(final Item item, final String text) {
