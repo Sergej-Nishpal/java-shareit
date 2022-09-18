@@ -1,7 +1,6 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.user.dto;
 
 import lombok.*;
-import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.validation.Marker;
 
 import javax.validation.constraints.*;
@@ -13,7 +12,7 @@ import javax.validation.constraints.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class ItemDto {
+public class UserDto {
 
     @Null(groups = Marker.OnCreate.class)
     @Min(groups = Marker.OnUpdate.class, value = 1L)
@@ -23,10 +22,6 @@ public class ItemDto {
     private String name;
 
     @NotBlank(groups = Marker.OnCreate.class)
-    private String description;
-
-    @NotNull(groups = Marker.OnCreate.class)
-    private Boolean available;
-
-    private User owner;
+    @Email(message = "Указан некорректный email!")
+    private String email;
 }
