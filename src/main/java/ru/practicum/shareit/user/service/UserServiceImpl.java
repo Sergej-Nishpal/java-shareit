@@ -57,11 +57,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDto update(Long userId, UserDto userDto) {
-        if (!userRepository.existsById(userId)) {
-            log.error("Передан id несуществующего пользователя!");
-            throw new UserNotFoundException(USER_WITH_ID + userId + NOT_FOUND);
-        }
-
+        validateUserExists(userId);
         User savedUser = userRepository.getUserById(userId);
 
         if (userDto.getName() != null) {
@@ -79,12 +75,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteById(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            log.error("Передан несуществующий id пользователя!");
-            throw new UserNotFoundException(USER_WITH_ID + userId + NOT_FOUND);
-        }
-
+        validateUserExists(userId);
         userRepository.deleteById(userId);
         log.debug("Удалили пользователя с id = {}.", userId);
+    }
+
+    @Override
+    public void validateUserExists(Long id) {
+        if (!userRepository.existsById(id)) {
+            log.error("Передан несуществующий id пользователя!");
+            throw new UserNotFoundException(USER_WITH_ID + id + NOT_FOUND);
+        }
     }
 }

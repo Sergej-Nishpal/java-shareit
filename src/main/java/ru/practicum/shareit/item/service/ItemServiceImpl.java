@@ -6,12 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.ItemNotFoundException;
 import ru.practicum.shareit.exception.UnauthorizedOperationException;
-import ru.practicum.shareit.exception.UserNotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.service.UserService;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -22,30 +21,27 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
     @Transactional
     public ItemDto add(Long userId, ItemDto itemDto) {
-        validateUserExists(userId);
-
+        userService.validateUserExists(userId);
         itemDto.setOwnerId(userId);
         final Item item = ItemMapper.toItem(itemDto);
 
         final Item savedItem = itemRepository.save(item);
-        log.debug("Владелец с id = {} добавил новую вещь.}", userId);
+        log.debug("Владелец с id = {} добавил новую вещь, её id = {}.", userId, savedItem.getId());
         return ItemMapper.toItemDto(savedItem);
     }
 
     @Override
     @Transactional
     public ItemDto update(long userId, long itemId, ItemDto itemDto) {
-        validateUserExists(userId);
+        userService.validateUserExists(userId);
         validateIsUsersItem(userId, itemId);
 
         Item savedItem = itemRepository.getItemById(itemId);
-
-        itemDto.setOwnerId(userId);
 
         if (itemDto.getName() != null) {
             savedItem.setName(itemDto.getName());
@@ -66,7 +62,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto getById(long userId, long itemId) {
-        validateUserExists(userId);
+        userService.validateUserExists(userId);
         if (!itemRepository.existsById(itemId)) {
             log.error("Вещь с id = {} не найдена!", itemId);
             throw new ItemNotFoundException("Вещь с id = " + itemId + " не найдена!");
@@ -77,8 +73,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public Collection<ItemDto> getAll(long userId) {
-        validateUserExists(userId);
+        userService.validateUserExists(userId);
         log.debug("Владелец с id = {} запросил список своих вещей.", userId);
         return itemRepository.findAllByOwnerId(userId)
                 .stream()
@@ -87,8 +84,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public Collection<ItemDto> getByText(long userId, String text) {
-        validateUserExists(userId);
+        userService.validateUserExists(userId);
         if (text.isEmpty()) {
             log.debug("Текст для поиска не содержит символов!");
             return Collections.emptyList();
@@ -101,14 +99,16 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private void validateUserExists(Long id) {
-        if (!userRepository.existsById(id)) {
-            log.error("Пользователь с id = {} не найден в БД.", id);
-            throw new UserNotFoundException("Пользователь с id = " + id + " не найден!");
+    @Override
+    public void validateItemExists(long itemId) {
+        if (!itemRepository.existsById(itemId)) {
+            log.error("Передан несуществующий id вещи!");
+            throw new ItemNotFoundException("Вещь с id = " + itemId + " не найдена!");
         }
     }
 
-    private void validateIsUsersItem(long userId, long itemId) {
+    @Transactional
+    public void validateIsUsersItem(long userId, long itemId) {
         if (itemRepository.findAllByOwnerId(userId) == null
                 || itemRepository.findAllByOwnerId(userId)
                 .stream()

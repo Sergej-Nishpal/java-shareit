@@ -15,4 +15,8 @@ public interface ItemService {
     Collection<ItemDto> getAll(long userId);
 
     Collection<ItemDto> getByText(long userId, String text);
+
+    void validateItemExists(long itemId);
+
+    void validateIsUsersItem(long userId, long itemId);
 }
