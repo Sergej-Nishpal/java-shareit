@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exception.ItemNotFoundException;
 import ru.practicum.shareit.exception.UnauthorizedOperationException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoForResponse;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
@@ -25,6 +27,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
 
     @Override
     @Transactional
@@ -64,7 +67,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto getById(long userId, long itemId) {
+    public ItemDtoForResponse getById(long userId, long itemId) {
         userService.validateUserExists(userId);
         if (!itemRepository.existsById(itemId)) {
             log.error("Вещь с id = {} не найдена!", itemId);
@@ -72,17 +75,26 @@ public class ItemServiceImpl implements ItemService {
         }
 
         log.debug("Пользователь с id = {} запрашивает информацию о вещи с id = {}.", userId, itemId);
-        return ItemMapper.toItemDto(itemRepository.getItemById(itemId));
+        final Item item = itemRepository.getItemById(itemId);
+        if (item.getOwner().getId() == userId) {
+            return ItemMapper.toItemDtoForResponse(item,
+                    bookingRepository.getCurrentOrPastBookingByItem(item),
+                    bookingRepository.getFutureBookingByItem(item));
+        } else {
+            return ItemMapper.toItemDtoForResponse(item, null, null);
+        }
     }
 
     @Override
     @Transactional
-    public Collection<ItemDto> getAll(long userId) {
+    public Collection<ItemDtoForResponse> getAll(long userId) {
         userService.validateUserExists(userId);
         log.debug("Владелец с id = {} запросил список своих вещей.", userId);
-        return itemRepository.findAllByOwnerId(userId)
+        return itemRepository.findAllByOwnerIdOrderByIdAsc(userId)
                 .stream()
-                .map(ItemMapper::toItemDto)
+                .map(item -> ItemMapper.toItemDtoForResponse(item,
+                        bookingRepository.getCurrentOrPastBookingByItem(item),
+                        bookingRepository.getFutureBookingByItem(item)))
                 .collect(Collectors.toList());
     }
 
@@ -112,8 +124,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     public void validateIsUsersItem(long userId, long itemId) {
-        if (itemRepository.findAllByOwnerId(userId) == null
-                || itemRepository.findAllByOwnerId(userId)
+        if (itemRepository.findAllByOwnerIdOrderByIdAsc(userId) == null
+                || itemRepository.findAllByOwnerIdOrderByIdAsc(userId)
                 .stream()
                 .map(Item::getId)
                 .noneMatch(id -> id == itemId)) {
