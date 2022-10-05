@@ -10,6 +10,8 @@ import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.util.Collection;
@@ -22,16 +24,17 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserService userService;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
     public ItemDto add(Long userId, ItemDto itemDto) {
         userService.validateUserExists(userId);
-        itemDto.setOwnerId(userId);
-        final Item item = ItemMapper.toItem(itemDto);
+        final User owner = userRepository.getUserById(userId);
+        final Item item = ItemMapper.toItem(itemDto, owner);
 
         final Item savedItem = itemRepository.save(item);
-        log.debug("Владелец с id = {} добавил новую вещь, её id = {}.", userId, savedItem.getId());
+        log.debug("Владелец с id = {} добавил новую вещь с id = {}.", userId, savedItem.getId());
         return ItemMapper.toItemDto(savedItem);
     }
 

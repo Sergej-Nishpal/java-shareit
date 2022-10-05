@@ -13,7 +13,8 @@ import javax.validation.ConstraintViolationException;
 @RestControllerAdvice
 public class ErrorHandler {
 
-    @ExceptionHandler({ConstraintViolationException.class, ItemUnavailableException.class})
+    @ExceptionHandler({ConstraintViolationException.class, ItemUnavailableException.class,
+            UnknownBookingStateException.class, BookingStatusException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidation(final RuntimeException e) {
         log.error("400 - Ошибка валидации: {} ", e.getMessage(), e);
@@ -34,7 +35,8 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class, BookingNotFoundException.class})
+    @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class,
+            BookingNotFoundException.class, InvalidBookingException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFound(final RuntimeException e) {
         log.error("404 - Объект не найден: {} ", e.getMessage(), e);

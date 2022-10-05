@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.*;
+import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 
@@ -27,8 +28,9 @@ public class Item {
     @Column(name = "is_available", nullable = false)
     private Boolean available;
 
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "owner_id")
-    private Long ownerId;
+    private User owner;
 
     @JoinColumn(name = "request_id")
     private Long requestId;

@@ -26,6 +26,4 @@ public class ItemDto {
 
     @NotNull(groups = Marker.OnCreate.class)
     private Boolean available;
-
-    private Long ownerId;
 }

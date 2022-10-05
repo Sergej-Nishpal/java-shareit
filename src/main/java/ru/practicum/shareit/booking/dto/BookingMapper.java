@@ -9,13 +9,12 @@ import ru.practicum.shareit.user.model.User;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BookingMapper {
 
-    public static Booking toBooking(BookingDto bookingDto) {
-
+    public static Booking toBooking(BookingDto bookingDto, Item item, User booker) {
         return Booking.builder()
                 .start(bookingDto.getStart())
                 .end(bookingDto.getEnd())
-                .itemId(bookingDto.getItemId())
-                .bookerId(bookingDto.getBookerId())
+                .item(item)
+                .booker(booker)
                 .build();
     }
 
@@ -25,19 +24,21 @@ public class BookingMapper {
                 .start(booking.getStart())
                 .end(booking.getEnd())
                 .status(booking.getStatus())
-                .itemId(booking.getItemId())
-                .bookerId(booking.getBookerId())
+                .itemId(booking.getItem().getId())
+                .bookerId(booking.getBooker().getId())
                 .build();
     }
 
-    public static BookingGetDto toBookingGetDto(Booking booking, User booker, Item item) {
-        return BookingGetDto.builder()
+    public static BookingDtoForResponse toBookingDtoForResponse(Booking booking) {
+        final Item item = booking.getItem();
+        final User booker = booking.getBooker();
+        return BookingDtoForResponse.builder()
                 .id(booking.getId())
-                .status(booking.getStatus())
                 .start(booking.getStart())
                 .end(booking.getEnd())
-                .booker(booker)
+                .status(booking.getStatus())
                 .item(item)
+                .booker(booker)
                 .build();
     }
 }

@@ -5,11 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.booking.dto.BookingGetDto;
+import ru.practicum.shareit.booking.dto.BookingDtoForResponse;
 import ru.practicum.shareit.booking.dto.BookingMapper;
-import ru.practicum.shareit.exception.ItemNotFoundException;
-import ru.practicum.shareit.exception.ItemUnavailableException;
-import ru.practicum.shareit.exception.UnauthorizedOperationException;
+import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
@@ -35,11 +33,11 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto addBooking(Long userId, BookingDto bookingDto) {
         userService.validateUserExists(userId);
         itemService.validateItemExists(bookingDto.getItemId());
-
+        validateBookerIsOwner(userId, bookingDto.getItemId());
         bookingDto.setBookerId(userId);
-        Booking booking = BookingMapper.toBooking(bookingDto);
-        Item item = itemRepository.getItemById(bookingDto.getItemId());
-
+        final Item item = itemRepository.getItemById(bookingDto.getItemId());
+        final User booker = userRepository.getUserById(userId);
+        Booking booking = BookingMapper.toBooking(bookingDto, item, booker);
         if (item.getAvailable() != null && item.getAvailable()) {
             booking.setStatus(BookingStatus.WAITING);
             bookingRepository.save(booking);
@@ -55,13 +53,12 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public BookingGetDto approveBooking(long userId, long bookingId, boolean approved) {
+    public BookingDtoForResponse approveBooking(long userId, long bookingId, boolean approved) {
         userService.validateUserExists(userId);
         validateBookingExists(bookingId);
-
-        Booking booking = bookingRepository.getBookingById(bookingId);
-        itemService.validateIsUsersItem(userId, booking.getItemId());
-
+        final Booking booking = bookingRepository.getBookingById(bookingId);
+        validateUserIsOwner(userId, booking.getItem().getId());
+        validateBookingHaveSameStatus(booking, approved);
         if (approved) {
             booking.setStatus(BookingStatus.APPROVED);
             log.debug("Бронирование> с id = {} подтверждено.", bookingId);
@@ -69,43 +66,50 @@ public class BookingServiceImpl implements BookingService {
             booking.setStatus(BookingStatus.REJECTED);
             log.debug("Бронирование> с id = {} отклонено.", bookingId);
         }
+
         return BookingMapper
-                .toBookingGetDto(booking,
-                        userRepository.getUserById(booking.getBookerId()),
-                        itemRepository.getItemById(booking.getItemId()));
+                .toBookingDtoForResponse(booking);
     }
 
-    @Override
-    public BookingGetDto getBookingInfo(long userId, long bookingId) {
-        userService.validateUserExists(userId);
-        validateBookingExists(bookingId);
+    private void validateBookingHaveSameStatus(Booking booking, boolean approved) {
+        if (approved && booking.getStatus().equals(BookingStatus.APPROVED)) {
+            log.error("Бронирование уже имеет статус {}.", BookingStatus.APPROVED.name());
+            throw new BookingStatusException("Бронирование уже имеет статус " + BookingStatus.APPROVED.name());
+        }
 
-        Booking booking = bookingRepository.getBookingById(bookingId);
-        long itemId = booking.getItemId();
-
-        if (userId == itemRepository.getItemById(itemId).getOwnerId() || userId == booking.getBookerId()) {
-            final User user = userRepository.getUserById(userId);
-            final Item item = itemRepository.getItemById(itemId);
-            return BookingMapper
-                    .toBookingGetDto(booking, user, item);
-        } else {
-            log.error("Пользователь с id = {} не является владельцем или автором бронирования " +
-                    "вещи с id = {}.", userId, itemId);
-            throw new UnauthorizedOperationException("Попытка выполнения операции " +
-                    "посторонним пользователем с id = " + userId + "!");
+        if (!approved && booking.getStatus().equals(BookingStatus.REJECTED)) {
+            log.error("Бронирование уже имеет статус {}.", BookingStatus.REJECTED.name());
+            throw new BookingStatusException("Бронирование уже имеет статус " + BookingStatus.REJECTED.name());
         }
     }
 
     @Override
-    public Collection<BookingGetDto> getBookings(long userId, BookingStatus state) {
+    public BookingDtoForResponse getBookingInfo(long userId, long bookingId) {
         userService.validateUserExists(userId);
-        Collection<Booking> bookings = bookingRepository
-                .getBookingsByBookerIdAndStatusOrderByBookerIdAsc(userId, state);
+        validateBookingExists(bookingId);
+        final Booking booking = bookingRepository.getBookingById(bookingId);
+        long itemId = booking.getItem().getId();
+        validateUserIsOwnerOrBooker(userId, itemId, booking);
+        return BookingMapper.toBookingDtoForResponse(booking);
+    }
+
+    @Override
+    public Collection<BookingDtoForResponse> getBookings(long userId, String state) {
+        userService.validateUserExists(userId);
+        final User booker = userRepository.getUserById(userId);
+        Collection<Booking> bookings = getBookingsOfBooker(booker, state);
         return bookings.stream()
-                .map(booking -> BookingMapper
-                        .toBookingGetDto(booking,
-                                userRepository.getUserById(booking.getBookerId()),
-                                itemRepository.getItemById(booking.getItemId())))
+                .map(BookingMapper::toBookingDtoForResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<BookingDtoForResponse> getBookingsOfOwner(long userId, String state) {
+        userService.validateUserExists(userId);
+        final User owner = userRepository.getUserById(userId);
+        Collection<Booking> bookings = getBookingsOfOwner(owner, state);
+        return bookings.stream()
+                .map(BookingMapper::toBookingDtoForResponse)
                 .collect(Collectors.toList());
     }
 
@@ -114,6 +118,76 @@ public class BookingServiceImpl implements BookingService {
         if (!bookingRepository.existsById(id)) {
             log.error("<Бронирование> с id = {} не найдено!", id);
             throw new ItemNotFoundException("Бронирование с id = " + id + " не найдено!");
+        }
+    }
+
+    private void validateUserIsOwnerOrBooker(long userId, long itemId, Booking booking) {
+        final Item item = itemRepository.getItemById(itemId);
+        if (booking.getBooker().getId() != userId && item.getOwner().getId() != userId) {
+            log.error("Пользователь с id = {} не является владельцем или автором бронирования " +
+                    "вещи с id = {}.", userId, itemId);
+            throw new BookingNotFoundException("Попытка выполнения операции " +
+                    "посторонним пользователем с id = " + userId + "!");
+        }
+    }
+
+    private void validateUserIsOwner(long userId, long itemId) {
+        final Item item = itemRepository.getItemById(itemId);
+        if (item.getOwner().getId() != userId) {
+            log.error("Пользователь с id = {} не является владельцем " +
+                    "вещи с id = {}.", userId, itemId);
+            throw new ItemNotFoundException("Попытка выполнения операции " +
+                    "посторонним пользователем с id = " + userId + "!");
+        }
+    }
+
+    private void validateBookerIsOwner(long userId, long itemId) {
+        final Item item = itemRepository.getItemById(itemId);
+        if (item.getOwner().getId() == userId) {
+            log.error("Пользователь с id = {} является владельцем " +
+                    "вещи с id = {}.", userId, itemId);
+            throw new InvalidBookingException("Попытка бронирования " +
+                    "своей вещи владельцем с id = " + userId + "!");
+        }
+    }
+
+    private Collection<Booking> getBookingsOfBooker(User booker, String state) {
+        switch (state) {
+            case "ALL":
+                return bookingRepository.getAllByBookerOrderByStartDesc(booker);
+            case "CURRENT":
+                return bookingRepository.getAllCurrentByBookerOrderByStartDesc(booker);
+            case "PAST":
+                return bookingRepository.getAllPastByBookerOrderByStartDesc(booker);
+            case "FUTURE":
+                return bookingRepository.getAllFutureByBookerOrderByStartDesc(booker);
+            case "WAITING":
+                return bookingRepository.getAllByBookerAndStatusOrderByStartDesc(booker, BookingStatus.WAITING);
+            case "REJECTED":
+                return bookingRepository.getAllByBookerAndStatusOrderByStartDesc(booker, BookingStatus.REJECTED);
+            default:
+                log.error("Передан неизвестный статус бронирования: {}", state);
+                throw new UnknownBookingStateException("Unknown state: " + state);
+        }
+    }
+
+    private Collection<Booking> getBookingsOfOwner(User owner, String state) {
+        switch (state) {
+            case "ALL":
+                return bookingRepository.getAllByItemOwnerOrderByStartDesc(owner);
+            case "CURRENT":
+                return bookingRepository.getAllCurrentByItemOwnerOrderByStartDesc(owner);
+            case "PAST":
+                return bookingRepository.getAllPastByItemOwnerOrderByStartDesc(owner);
+            case "FUTURE":
+                return bookingRepository.getAllFutureByItemOwnerOrderByStartDesc(owner);
+            case "WAITING":
+                return bookingRepository.getAllByItemOwnerAndStatusOrderByStartDesc(owner, BookingStatus.WAITING);
+            case "REJECTED":
+                return bookingRepository.getAllByItemOwnerAndStatusOrderByStartDesc(owner, BookingStatus.REJECTED);
+            default:
+                log.error("Передан неизвестный статус бронирования: {}", state);
+                throw new UnknownBookingStateException("Unknown state: " + state);
         }
     }
 }
