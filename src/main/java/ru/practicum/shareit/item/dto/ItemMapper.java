@@ -6,6 +6,9 @@ import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ItemMapper {
 
@@ -29,6 +32,9 @@ public class ItemMapper {
     }
 
     public static ItemDtoForResponse toItemDtoForResponse(Item item, Booking lastBooking, Booking nextBooking) {
+        final Collection<CommentDtoForResponse> comments = item.getComments().stream()
+                .map(CommentMapper::toCommentDtoForResponse)
+                .collect(Collectors.toList());
         return ItemDtoForResponse.builder()
                 .id(item.getId())
                 .name(item.getName())
@@ -36,6 +42,7 @@ public class ItemMapper {
                 .available(item.getAvailable())
                 .lastBooking(lastBooking == null ? null : getBookingData(lastBooking))
                 .nextBooking(nextBooking == null ? null : getBookingData(nextBooking))
+                .comments(comments)
                 .build();
     }
 

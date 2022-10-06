@@ -1,5 +1,7 @@
 package ru.practicum.shareit.item.service;
 
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.CommentDtoForResponse;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoForResponse;
 
@@ -20,4 +22,6 @@ public interface ItemService {
     void validateItemExists(long itemId);
 
     void validateIsUsersItem(long userId, long itemId);
+
+    CommentDtoForResponse addComment(CommentDto commentCreateDto, Long itemId, Long userId);
 }

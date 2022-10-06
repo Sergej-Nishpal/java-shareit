@@ -14,7 +14,6 @@ public class StartBeforeEndValidator implements ConstraintValidator<StartBeforeE
     public boolean isValid(StartEndDated startEndDated, ConstraintValidatorContext constraintValidatorContext) {
         final LocalDateTime start = startEndDated.getStart();
         final LocalDateTime end = startEndDated.getEnd();
-
         return !start.isAfter(end);
     }
 }

@@ -4,13 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.exception.IncorrectCommentException;
 import ru.practicum.shareit.exception.ItemNotFoundException;
 import ru.practicum.shareit.exception.UnauthorizedOperationException;
+import ru.practicum.shareit.item.CommentRepository;
 import ru.practicum.shareit.item.ItemRepository;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoForResponse;
-import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
@@ -28,6 +30,7 @@ public class ItemServiceImpl implements ItemService {
     private final UserService userService;
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     @Transactional
@@ -115,6 +118,15 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    public CommentDtoForResponse addComment(CommentDto commentDto, Long itemId, Long userId) {
+        final User user = userRepository.getUserById(userId);
+        validateItemWasBookedByUser(itemId, user);
+        final Item item = itemRepository.getItemById(itemId);
+        Comment comment = CommentMapper.toComment(commentDto, item, user);
+        return CommentMapper.toCommentDtoForResponse(commentRepository.save(comment));
+    }
+
+    @Override
     public void validateItemExists(long itemId) {
         if (!itemRepository.existsById(itemId)) {
             log.error("Передан несуществующий id вещи!");
@@ -132,6 +144,17 @@ public class ItemServiceImpl implements ItemService {
             log.error("Пользователь с id = {} не является владельцем запрашиваемой вещи с id = {}.", userId, itemId);
             throw new UnauthorizedOperationException("Попытка выполнения операции " +
                     "посторонним пользователем с id = " + userId + "!");
+        }
+    }
+
+    private void validateItemWasBookedByUser(long itemId, User user) {
+        if (bookingRepository.getAllPastByBookerOrderByStartDesc(user)
+                .stream()
+                .map(Booking::getItem)
+                .noneMatch(item -> item.getId() == itemId)) {
+            log.error("Пользователь с id = {} не арендовал ранее вещь с id = {}.", user.getId(), itemId);
+            throw new IncorrectCommentException("Попытка добавить комментарий " +
+                    "к незнакомой вещи пользователем с id = " + user.getId() + "!");
         }
     }
 }

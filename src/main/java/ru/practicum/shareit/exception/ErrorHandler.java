@@ -14,7 +14,7 @@ import javax.validation.ConstraintViolationException;
 public class ErrorHandler {
 
     @ExceptionHandler({ConstraintViolationException.class, ItemUnavailableException.class,
-            UnknownBookingStateException.class, BookingStatusException.class})
+            UnknownBookingStateException.class, BookingStatusException.class, IncorrectCommentException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidation(final RuntimeException e) {
         log.error("400 - Ошибка валидации: {} ", e.getMessage(), e);

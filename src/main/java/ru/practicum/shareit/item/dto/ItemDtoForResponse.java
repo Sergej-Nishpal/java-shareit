@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.dto;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 @Getter
 @Setter
@@ -18,6 +19,7 @@ public class ItemDtoForResponse {
     private Boolean available;
     private BookingDtoForItem lastBooking;
     private BookingDtoForItem nextBooking;
+    private Collection<CommentDtoForResponse> comments;
 
     @Getter
     @Setter
