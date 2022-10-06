@@ -7,13 +7,15 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoForResponse;
 import ru.practicum.shareit.booking.dto.BookingMapper;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.UserService;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -61,10 +63,10 @@ public class BookingServiceImpl implements BookingService {
         validateBookingHaveSameStatus(booking, approved);
         if (approved) {
             booking.setStatus(BookingStatus.APPROVED);
-            log.debug("Бронирование> с id = {} подтверждено.", bookingId);
+            log.debug("Бронирование с id = {} подтверждено.", bookingId);
         } else {
             booking.setStatus(BookingStatus.REJECTED);
-            log.debug("Бронирование> с id = {} отклонено.", bookingId);
+            log.debug("Бронирование с id = {} отклонено.", bookingId);
         }
 
         return BookingMapper
@@ -90,6 +92,7 @@ public class BookingServiceImpl implements BookingService {
         final Booking booking = bookingRepository.getBookingById(bookingId);
         long itemId = booking.getItem().getId();
         validateUserIsOwnerOrBooker(userId, itemId, booking);
+        log.debug("Пользователь с id = {} запросил инфо о бронировании с id = {}.", userId, bookingId);
         return BookingMapper.toBookingDtoForResponse(booking);
     }
 
@@ -98,6 +101,7 @@ public class BookingServiceImpl implements BookingService {
         userService.validateUserExists(userId);
         final User booker = userRepository.getUserById(userId);
         Collection<Booking> bookings = getBookingsOfBooker(booker, state);
+        log.debug("Пользователь с id = {} запросил инфо о бронированиях со статусом {}.", userId, state);
         return bookings.stream()
                 .map(BookingMapper::toBookingDtoForResponse)
                 .collect(Collectors.toList());
@@ -108,6 +112,7 @@ public class BookingServiceImpl implements BookingService {
         userService.validateUserExists(userId);
         final User owner = userRepository.getUserById(userId);
         Collection<Booking> bookings = getBookingsOfOwner(owner, state);
+        log.debug("Владелец с id = {} запросил инфо о бронированиях со статусом {}.", userId, state);
         return bookings.stream()
                 .map(BookingMapper::toBookingDtoForResponse)
                 .collect(Collectors.toList());
@@ -116,7 +121,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public void validateBookingExists(long id) {
         if (!bookingRepository.existsById(id)) {
-            log.error("<Бронирование> с id = {} не найдено!", id);
+            log.error("Бронирование с id = {} не найдено!", id);
             throw new ItemNotFoundException("Бронирование с id = " + id + " не найдено!");
         }
     }
@@ -134,8 +139,7 @@ public class BookingServiceImpl implements BookingService {
     private void validateUserIsOwner(long userId, long itemId) {
         final Item item = itemRepository.getItemById(itemId);
         if (item.getOwner().getId() != userId) {
-            log.error("Пользователь с id = {} не является владельцем " +
-                    "вещи с id = {}.", userId, itemId);
+            log.error("Пользователь с id = {} не является владельцем вещи с id = {}.", userId, itemId);
             throw new ItemNotFoundException("Попытка выполнения операции " +
                     "посторонним пользователем с id = " + userId + "!");
         }
@@ -144,8 +148,7 @@ public class BookingServiceImpl implements BookingService {
     private void validateBookerIsOwner(long userId, long itemId) {
         final Item item = itemRepository.getItemById(itemId);
         if (item.getOwner().getId() == userId) {
-            log.error("Пользователь с id = {} является владельцем " +
-                    "вещи с id = {}.", userId, itemId);
+            log.error("Пользователь с id = {} является владельцем вещи с id = {}.", userId, itemId);
             throw new InvalidBookingException("Попытка бронирования " +
                     "своей вещи владельцем с id = " + userId + "!");
         }

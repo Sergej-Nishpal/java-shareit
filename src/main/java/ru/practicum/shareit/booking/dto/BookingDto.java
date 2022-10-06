@@ -2,7 +2,7 @@ package ru.practicum.shareit.booking.dto;
 
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
-import ru.practicum.shareit.booking.BookingStatus;
+import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.validation.Marker;
 import ru.practicum.shareit.validation.startend.StartBeforeEndValid;
 import ru.practicum.shareit.validation.startend.StartEndDated;

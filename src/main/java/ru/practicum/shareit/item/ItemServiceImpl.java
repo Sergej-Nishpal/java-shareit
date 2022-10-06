@@ -1,22 +1,20 @@
-package ru.practicum.shareit.item.service;
+package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exception.IncorrectCommentException;
 import ru.practicum.shareit.exception.ItemNotFoundException;
 import ru.practicum.shareit.exception.UnauthorizedOperationException;
-import ru.practicum.shareit.item.CommentRepository;
-import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.UserService;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -38,7 +36,6 @@ public class ItemServiceImpl implements ItemService {
         userService.validateUserExists(userId);
         final User owner = userRepository.getUserById(userId);
         final Item item = ItemMapper.toItem(itemDto, owner);
-
         final Item savedItem = itemRepository.save(item);
         log.debug("Владелец с id = {} добавил новую вещь с id = {}.", userId, savedItem.getId());
         return ItemMapper.toItemDto(savedItem);
@@ -89,7 +86,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    @Transactional
     public Collection<ItemDtoForResponse> getAll(long userId) {
         userService.validateUserExists(userId);
         log.debug("Владелец с id = {} запросил список своих вещей.", userId);
@@ -102,7 +98,6 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    @Transactional
     public Collection<ItemDto> getByText(long userId, String text) {
         userService.validateUserExists(userId);
         if (text.isEmpty()) {
@@ -118,11 +113,13 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public CommentDtoForResponse addComment(CommentDto commentDto, Long itemId, Long userId) {
         final User user = userRepository.getUserById(userId);
         validateItemWasBookedByUser(itemId, user);
         final Item item = itemRepository.getItemById(itemId);
-        Comment comment = CommentMapper.toComment(commentDto, item, user);
+        final Comment comment = CommentMapper.toComment(commentDto, item, user);
+        log.debug("Владелец с id = {} добавляет комментарий к вещи с id = {}.", userId, itemId);
         return CommentMapper.toCommentDtoForResponse(commentRepository.save(comment));
     }
 
@@ -134,7 +131,7 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    @Transactional
+    @Override
     public void validateIsUsersItem(long userId, long itemId) {
         if (itemRepository.findAllByOwnerIdOrderByIdAsc(userId) == null
                 || itemRepository.findAllByOwnerIdOrderByIdAsc(userId)
