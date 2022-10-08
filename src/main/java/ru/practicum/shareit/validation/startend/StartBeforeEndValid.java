@@ -20,10 +20,4 @@ public @interface StartBeforeEndValid {
     String start();
 
     String end();
-
-    @Target({ElementType.TYPE})
-    @Retention(RetentionPolicy.RUNTIME)
-    @interface List {
-        StartBeforeEndValid[] value();
-    }
 }

@@ -16,6 +16,4 @@ public interface BookingService {
     Collection<BookingDtoForResponse> getBookings(long userId, String state);
 
     Collection<BookingDtoForResponse> getBookingsOfOwner(long userId, String state);
-
-    void validateBookingExists(long id);
 }
