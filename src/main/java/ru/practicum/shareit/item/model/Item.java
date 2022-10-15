@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
+import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
@@ -35,8 +36,9 @@ public class Item {
     @JoinColumn(name = "owner_id")
     private User owner;
 
+    @ManyToOne
     @JoinColumn(name = "request_id")
-    private Long requestId;
+    private ItemRequest itemRequest;
 
     @OneToMany(mappedBy = "item")
     @ToString.Exclude

@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -12,6 +13,8 @@ import ru.practicum.shareit.exception.UnauthorizedOperationException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.ItemRequestService;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.model.User;
 
@@ -27,12 +30,18 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestService itemRequestService;
 
     @Override
     @Transactional
     public ItemDto add(Long userId, ItemDto itemDto) {
         final User owner = userService.getUser(userId);
-        final Item item = ItemMapper.toItem(itemDto, owner);
+        ItemRequest itemRequest = null;
+        if (itemDto.getRequestId() != null) {
+            itemRequest = itemRequestService.getItemRequestById(itemDto.getRequestId());
+        }
+
+        final Item item = ItemMapper.toItem(itemDto, owner, itemRequest);
         final Item savedItem = itemRepository.save(item);
         return ItemMapper.toItemDto(savedItem);
     }
@@ -130,7 +139,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void validateItemWasBookedByUser(Item item, User user) {
-        if (bookingRepository.getAllPastByBookerOrderByStartDesc(user)
+        if (bookingRepository.getAllPastByBookerOrderByStartDesc(user, PageRequest.of(0, 1))
                 .stream()
                 .map(Booking::getItem)
                 .noneMatch(item::equals)) {

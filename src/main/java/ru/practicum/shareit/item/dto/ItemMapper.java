@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.Collection;
@@ -18,16 +19,18 @@ public class ItemMapper {
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
+                .requestId(item.getItemRequest() == null ? null : item.getItemRequest().getId())
                 .build();
     }
 
-    public static Item toItem(ItemDto itemDto, User owner) {
+    public static Item toItem(ItemDto itemDto, User owner, ItemRequest itemRequest) {
         return Item.builder()
                 .id(itemDto.getId())
                 .name(itemDto.getName())
                 .description(itemDto.getDescription())
                 .available(itemDto.getAvailable())
                 .owner(owner)
+                .itemRequest(itemRequest)
                 .build();
     }
 
@@ -35,6 +38,7 @@ public class ItemMapper {
         final Collection<CommentDtoForResponse> comments = item.getComments().stream()
                 .map(CommentMapper::toCommentDtoForResponse)
                 .collect(Collectors.toList());
+
         return ItemDtoForResponse.builder()
                 .id(item.getId())
                 .name(item.getName())
@@ -43,6 +47,7 @@ public class ItemMapper {
                 .lastBooking(lastBooking == null ? null : getBookingData(lastBooking))
                 .nextBooking(nextBooking == null ? null : getBookingData(nextBooking))
                 .comments(comments)
+                .requestId(item.getItemRequest() == null ? null : item.getItemRequest().getId())
                 .build();
     }
 

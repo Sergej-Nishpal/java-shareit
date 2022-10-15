@@ -36,7 +36,7 @@ public class ItemRequest {
     @JoinColumn(name = "requestor_id", nullable = false)
     private User requestor;
 
-    @OneToMany
+    @OneToMany(mappedBy = "itemRequest")
     @ToString.Exclude
     @JsonIgnore
     private Collection<Item> items = new ArrayList<>();

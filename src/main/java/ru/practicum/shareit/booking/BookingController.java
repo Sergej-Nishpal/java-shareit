@@ -9,6 +9,8 @@ import ru.practicum.shareit.booking.dto.BookingDtoForResponse;
 import ru.practicum.shareit.validation.Marker;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.Collection;
 
 @Slf4j
@@ -45,16 +47,24 @@ public class BookingController {
     @GetMapping
     public Collection<BookingDtoForResponse> getBookings(@RequestHeader("X-Sharer-User-Id") long userId,
                                                          @RequestParam(name = "state", required = false,
-                                                                 defaultValue = "ALL") String state) {
+                                                                 defaultValue = "ALL") String state,
+                                                         @PositiveOrZero @RequestParam(name = "from",
+                                                                 defaultValue = "0") int from,
+                                                         @Positive @RequestParam(name = "size",
+                                                                 defaultValue = "10") int size) {
         log.debug("Получение информации о бронированиях со статусом \"{}\" пользователем с id = {}.", state, userId);
-        return bookingService.getBookings(userId, state);
+        return bookingService.getBookings(userId, state, from, size);
     }
 
     @GetMapping("/owner")
     public Collection<BookingDtoForResponse> getBookingsOfOwner(@RequestHeader("X-Sharer-User-Id") long userId,
                                                                 @RequestParam(name = "state", required = false,
-                                                                        defaultValue = "ALL") String state) {
+                                                                        defaultValue = "ALL") String state,
+                                                                @PositiveOrZero @RequestParam(name = "from",
+                                                                        defaultValue = "0") int from,
+                                                                @Positive @RequestParam(name = "size",
+                                                                        defaultValue = "10") int size) {
         log.debug("Получение информации о бронированиях со статусом \"{}\" владельцем с id = {}.", state, userId);
-        return bookingService.getBookingsOfOwner(userId, state);
+        return bookingService.getBookingsOfOwner(userId, state, from, size);
     }
 }

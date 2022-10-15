@@ -13,6 +13,7 @@ import javax.validation.constraints.PositiveOrZero;
 import java.util.Collection;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
@@ -20,7 +21,6 @@ public class ItemRequestController {
     private final ItemRequestService itemRequestService;
 
     @PostMapping
-    @Validated
     public ItemRequestDtoForResponse addItemRequest(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                     @RequestBody @Valid ItemRequestDto itemRequestDto) {
         log.debug("Создание запроса пользователем с id = {}", userId);
@@ -36,9 +36,9 @@ public class ItemRequestController {
     @GetMapping("/all")
     public Collection<ItemRequestDtoForResponse> getItemRequestsOfOther(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                                         @PositiveOrZero @RequestParam(name = "from",
-                                                                                defaultValue = "0") int from,
+                                                                                defaultValue = "0") Integer from,
                                                                         @Positive @RequestParam(name = "size",
-                                                                                defaultValue = "10") int size) {
+                                                                                defaultValue = "10") Integer size) {
         log.debug("Получение всех запросов пользователей, кроме id = {}", userId);
         return itemRequestService.getAllRequestsOfOther(userId, from, size);
     }

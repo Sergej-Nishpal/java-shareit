@@ -18,6 +18,6 @@ public class ItemRequestDtoForResponse {
     private Long id;
     private String description;
     private LocalDateTime created;
-    private UserDto requester;
+    private UserDto requestor;
     private Collection<ItemDtoForResponse> items;
 }
