@@ -29,8 +29,8 @@ class BookingMapperTest {
     void toBooking() throws Exception {
         Booking booking = Booking.builder()
                 .id(1L)
-                .start(LocalDateTime.of(2022,10, 21, 15, 30, 0))
-                .end(LocalDateTime.of(2022,10,21, 19, 30, 0))
+                .start(LocalDateTime.of(2022, 10, 21, 15, 30, 0))
+                .end(LocalDateTime.of(2022, 10, 21, 19, 30, 0))
                 .status(BookingStatus.WAITING)
                 .build();
 
@@ -46,8 +46,8 @@ class BookingMapperTest {
     void toBookingDto() throws IOException {
         BookingDto bookingDto = BookingDto.builder()
                 .id(1L)
-                .start(LocalDateTime.of(2022,10, 21, 15, 30, 0))
-                .end(LocalDateTime.of(2022,10,21, 19, 30, 0))
+                .start(LocalDateTime.of(2022, 10, 21, 15, 30, 0))
+                .end(LocalDateTime.of(2022, 10, 21, 19, 30, 0))
                 .status(BookingStatus.WAITING)
                 .build();
 
@@ -63,8 +63,8 @@ class BookingMapperTest {
     void toBookingDtoForResponse() throws IOException {
         BookingDtoForResponse bookingDtoForResponse = BookingDtoForResponse.builder()
                 .id(1L)
-                .start(LocalDateTime.of(2022,10, 21, 15, 30, 0))
-                .end(LocalDateTime.of(2022,10,21, 19, 30, 0))
+                .start(LocalDateTime.of(2022, 10, 21, 15, 30, 0))
+                .end(LocalDateTime.of(2022, 10, 21, 19, 30, 0))
                 .status(BookingStatus.WAITING)
                 .build();
 

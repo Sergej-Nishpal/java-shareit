@@ -146,8 +146,8 @@ class BookingControllerTest {
                 .thenReturn(bookingDtoForResponse);
 
         mockMvc.perform(get("/bookings/{bookingId}", 1L)
-                .header("X-Sharer-User-Id", 1L)
-                .characterEncoding(StandardCharsets.UTF_8))
+                        .header("X-Sharer-User-Id", 1L)
+                        .characterEncoding(StandardCharsets.UTF_8))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.booker", is(user2), User.class))
                 .andExpect(jsonPath("$.status", is(BookingStatus.APPROVED.name()), BookingStatus.class));

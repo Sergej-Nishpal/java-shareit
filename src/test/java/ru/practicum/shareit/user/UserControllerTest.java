@@ -87,7 +87,7 @@ class UserControllerTest {
                 .thenReturn(users);
 
         mvc.perform(get("/users")
-                .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].name", is(userDtoOne.getName())))

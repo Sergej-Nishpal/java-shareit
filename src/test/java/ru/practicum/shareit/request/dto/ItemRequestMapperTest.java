@@ -33,7 +33,7 @@ class ItemRequestMapperTest {
                         .email("sergej.nishpal@yandex.ru")
                         .build())
                 .description("Test itemRequest description")
-                .created(LocalDateTime.of(2022,10,21, 19, 30, 0))
+                .created(LocalDateTime.of(2022, 10, 21, 19, 30, 0))
                 .build();
 
         JsonContent<ItemRequest> result = jsonItemRequest.write(itemRequest);
@@ -64,7 +64,7 @@ class ItemRequestMapperTest {
                         .email("sergej.nishpal@yandex.ru")
                         .build())
                 .description("Test itemRequest description")
-                .created(LocalDateTime.of(1975,2,14, 19, 35, 0))
+                .created(LocalDateTime.of(1975, 2, 14, 19, 35, 0))
                 .build();
 
         JsonContent<ItemRequestDtoForResponse> result = jsonItemRequestDtoForResponse.write(itemRequestDtoForResponse);

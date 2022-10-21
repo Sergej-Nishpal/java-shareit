@@ -286,7 +286,8 @@ class ItemServiceImplTest {
         when(itemRepository.findAllByOwnerIdOrderByIdAsc(anyLong()))
                 .thenReturn(List.of(item));
         itemService.validateIsUsersItem(1L, 1L);
-        assertDoesNotThrow(() -> { });
+        assertDoesNotThrow(() -> {
+        });
     }
 
     @Test
