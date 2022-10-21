@@ -12,8 +12,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoForResponse;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.exception.ItemUnavailableException;
-import ru.practicum.shareit.exception.UnknownBookingStateException;
+import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
@@ -114,6 +113,24 @@ class BookingServiceImplTest {
     }
 
     @Test
+    void addBookingByUserIsOwner() {
+        item.setOwner(booker);
+
+        when(userService.getUser(anyLong()))
+                .thenReturn(booker);
+        when(itemService.getItem(anyLong()))
+                .thenReturn(item);
+
+        final Long bookerId = booker.getId();
+        final InvalidBookingException exception = assertThrows(InvalidBookingException.class,
+                () -> bookingService.addBooking(bookerId, bookingDto));
+        String expectedMessage = "Попытка бронирования " +
+                "своей вещи владельцем с id = " + bookerId + "!";
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
     void approveBookingTrue() {
         when(userService.getUser(anyLong()))
                 .thenReturn(owner);
@@ -142,6 +159,36 @@ class BookingServiceImplTest {
     }
 
     @Test
+    void approveBookingApproved() {
+        booking.setStatus(BookingStatus.APPROVED);
+        when(userService.getUser(anyLong()))
+                .thenReturn(owner);
+        when(bookingRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(booking));
+
+        final BookingStatusException exception = assertThrows(BookingStatusException.class,
+                () -> bookingService.approveBooking(1L, 1L, true));
+        String expectedMessage = "Бронирование уже имеет статус " + BookingStatus.APPROVED.name();
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
+    void approveBookingRejected() {
+        booking.setStatus(BookingStatus.REJECTED);
+        when(userService.getUser(anyLong()))
+                .thenReturn(owner);
+        when(bookingRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(booking));
+
+        final BookingStatusException exception = assertThrows(BookingStatusException.class,
+                () -> bookingService.approveBooking(1L, 1L, false));
+        String expectedMessage = "Бронирование уже имеет статус " + BookingStatus.REJECTED.name();
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
     void getBookingInfo() {
         when(userService.getUser(anyLong()))
                 .thenReturn(owner);
@@ -156,6 +203,20 @@ class BookingServiceImplTest {
         assertNotNull(bookingDtoForResponse);
         assertEquals(booker, bookingDtoForResponse.getBooker());
         verify(bookingRepository, times(1)).findById(anyLong());
+    }
+
+    @Test
+    void getBookingInfoNotFound() {
+        when(userService.getUser(anyLong()))
+                .thenReturn(owner);
+        when(bookingRepository.findById(anyLong()))
+                .thenReturn(Optional.empty());
+
+        final BookingNotFoundException exception = assertThrows(BookingNotFoundException.class,
+                () -> bookingService.getBookingInfo(1L, 1L));
+        String expectedMessage = String.valueOf(1L);
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
     }
 
     @Test

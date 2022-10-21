@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import ru.practicum.shareit.exception.ItemRequestNotFoundException;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestDtoForResponse;
 import ru.practicum.shareit.user.UserService;
@@ -17,8 +18,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -133,28 +133,12 @@ class ItemRequestServiceImplTest {
     void getItemRequest() {
         when(itemRequestRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(itemRequest));
-        /*when(userRepository.existsById(anyLong()))
-                .thenReturn(true);*/
         final ItemRequestDtoForResponse savedItemRequest =
                 itemRequestService.getItemRequest(requestor.getId(), itemRequest.getId());
         assertNotNull(savedItemRequest);
         verify(itemRequestRepository).findById(anyLong());
         verify(itemRequestRepository, times(1)).findById(anyLong());
     }
-
-    /*@Test
-    void getItemRequestUserNotExists() {
-        when(itemRequestRepository.findById(anyLong()))
-                .thenReturn(Optional.ofNullable(itemRequest));
-
-        final Long requestorId = 100L;
-        final Long itemRequestId = itemRequest.getId();
-        final UserNotFoundException exception = assertThrows(UserNotFoundException.class,
-                () -> itemRequestService.getItemRequest(requestorId, itemRequestId));
-        String expectedMessage = requestorId.toString();
-        String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(expectedMessage));
-    }*/
 
     @Test
     void getItemRequestById() {
@@ -163,5 +147,18 @@ class ItemRequestServiceImplTest {
         final ItemRequest savedItemRequest = itemRequestService.getItemRequestById(itemRequest.getId());
         assertNotNull(savedItemRequest);
         assertEquals(itemRequest.getDescription(), savedItemRequest.getDescription());
+    }
+
+    @Test
+    void getItemRequestByIdNotFound() {
+        when(itemRequestRepository.findById(anyLong()))
+                .thenReturn(Optional.empty());
+
+        final Long itemRequestId = itemRequest.getId();
+        final ItemRequestNotFoundException exception = assertThrows(ItemRequestNotFoundException.class,
+                () -> itemRequestService.getItemRequestById(itemRequestId));
+        final String expectedMessage = itemRequestId.toString();
+        final String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
     }
 }

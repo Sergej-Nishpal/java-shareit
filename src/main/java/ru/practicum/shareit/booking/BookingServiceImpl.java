@@ -99,7 +99,7 @@ public class BookingServiceImpl implements BookingService {
     private Booking getBooking(long id) {
         return bookingRepository.findById(id).orElseThrow(() -> {
             log.error("Бронирование с id = {} не найдено!", id);
-            return new BookingNotFoundException(id);
+            throw new BookingNotFoundException(id);
         });
     }
 

@@ -8,8 +8,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.exception.IncorrectCommentException;
+import ru.practicum.shareit.exception.ItemNotFoundException;
+import ru.practicum.shareit.exception.UnauthorizedOperationException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -206,6 +210,30 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void addCommentByUserNotUsed() {
+        currentBooking.setBooker(booker);
+        currentBooking.setItem(Item.builder().id(33L).build());
+
+        Page<Booking> bookings = new PageImpl<>(List.of(currentBooking));
+
+        when(itemRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(item));
+        when(userService.getUser(anyLong()))
+                .thenReturn(booker);
+        when(bookingRepository.getAllPastByBookerOrderByStartDesc(any(User.class), any(Pageable.class)))
+                .thenReturn(bookings);
+
+        final Long itemId = item.getId();
+        final Long bookerId = booker.getId();
+        final IncorrectCommentException exception = assertThrows(IncorrectCommentException.class,
+                () -> itemService.addComment(commentDto, itemId, bookerId));
+        final String expectedMessage = "Попытка добавить комментарий " +
+                "к незнакомой вещи пользователем с id = " + bookerId + "!";
+        final String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
     void getItem() {
         when(itemRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(item));
@@ -215,10 +243,38 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void getItemNotFound() {
+        when(itemRepository.findById(anyLong()))
+                .thenReturn(Optional.empty());
+
+        final Long itemId = item.getId();
+        final ItemNotFoundException exception = assertThrows(ItemNotFoundException.class,
+                () -> itemService.getItem(itemId));
+        final String expectedMessage = itemId.toString();
+        final String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
     void validateIsUsersItem() {
         when(itemRepository.findAllByOwnerIdOrderByIdAsc(anyLong()))
                 .thenReturn(List.of(item));
         itemService.validateIsUsersItem(1L, 1L);
         assertDoesNotThrow(() -> { });
+    }
+
+    @Test
+    void validateNotUsersItem() {
+        when(itemRepository.findAllByOwnerIdOrderByIdAsc(anyLong()))
+                .thenReturn(null);
+
+        final Long bookerId = booker.getId();
+        final Long itemId = item.getId();
+        final UnauthorizedOperationException exception = assertThrows(UnauthorizedOperationException.class,
+                () -> itemService.validateIsUsersItem(bookerId, itemId));
+        final String expectedMessage = "Попытка выполнения операции " +
+                "посторонним пользователем с id = " + bookerId + "!";
+        final String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
     }
 }

@@ -79,6 +79,16 @@ class UserServiceImplTest {
     }
 
     @Test
+    void findByIdNotExists() {
+        final Long userId = userHaveId.getId();
+        final UserNotFoundException exception = assertThrows(UserNotFoundException.class,
+                () -> userService.getById(userId));
+        final String expectedMessage = userId.toString();
+        final String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(expectedMessage));
+    }
+
+    @Test
     void findByIdNotFound() {
         when(userRepository.findById(100L))
                 .thenThrow(UserNotFoundException.class);

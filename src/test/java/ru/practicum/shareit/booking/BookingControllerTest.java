@@ -107,6 +107,21 @@ class BookingControllerTest {
     }
 
     @Test
+    void addBookingIncorrectBecauseStartAfterEnd() throws Exception {
+        bookingDto.setStart(bookingDto.getEnd().plusDays(1));
+
+        when(bookingService.addBooking(anyLong(), any(BookingDto.class)))
+                .thenReturn(bookingDto);
+
+        mockMvc.perform(post("/bookings")
+                        .header("X-Sharer-User-Id", 2L)
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
     void approveBooking() throws Exception {
         when(bookingService.approveBooking(anyLong(), anyLong(), anyBoolean()))
                 .thenReturn(bookingDtoForResponse);
