@@ -131,11 +131,37 @@ class ItemServiceImplTest {
                 .thenReturn(List.of(item));
         when(itemRepository.findById(anyLong()))
                 .thenReturn(Optional.ofNullable(item));
+
         ItemDto updatedItemDto =
                 ItemMapper.toItemDto(ItemMapper.toItem(itemService.update(owner.getId(), item.getId(), itemDto),
                         owner, itemRequest));
+
         assertNotNull(updatedItemDto);
         assertEquals(itemDto, updatedItemDto);
+        verify(itemRepository).save(any(Item.class));
+        verify(itemRepository, times(1)).save(any(Item.class));
+    }
+
+    @Test
+    void updateNull() {
+        itemDto.setId(33L);
+        itemDto.setName(null);
+        itemDto.setDescription(null);
+        itemDto.setAvailable(null);
+
+        when(itemRepository.save(any(Item.class)))
+                .thenReturn(item);
+        when(itemRepository.findAllByOwnerIdOrderByIdAsc(anyLong()))
+                .thenReturn(List.of(item));
+        when(itemRepository.findById(anyLong()))
+                .thenReturn(Optional.ofNullable(item));
+
+        ItemDto updatedItemDto =
+                ItemMapper.toItemDto(ItemMapper.toItem(itemService.update(owner.getId(), item.getId(), itemDto),
+                        owner, itemRequest));
+
+        assertNotNull(updatedItemDto);
+        assertNotEquals(itemDto, updatedItemDto);
         verify(itemRepository).save(any(Item.class));
         verify(itemRepository, times(1)).save(any(Item.class));
     }

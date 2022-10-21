@@ -3,8 +3,6 @@ package ru.practicum.shareit.user;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.exception.UserNotFoundException;
@@ -25,10 +23,8 @@ class UserServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
-
-    @Captor
-    private ArgumentCaptor<User> captor;
     private User userHaveId;
+    private User savedUser;
     private User userHaveNotId;
 
     @BeforeEach
@@ -36,6 +32,12 @@ class UserServiceImplTest {
         userService = new UserServiceImpl(userRepository);
 
         userHaveId = User.builder()
+                .id(1L)
+                .name("Sergej Nishpal")
+                .email("sergej.nishpal@yandex.ru")
+                .build();
+
+        savedUser = User.builder()
                 .id(1L)
                 .name("Sergej Nishpal")
                 .email("sergej.nishpal@yandex.ru")
@@ -120,16 +122,36 @@ class UserServiceImplTest {
     @Test
     void updateUser() {
         userHaveId.setEmail("s.nishpal@yandex.ru");
-        User updatedUser = userHaveId;
-        when(userRepository.findById(userHaveId.getId())).thenReturn(Optional.of(userHaveId));
-        when(userRepository.save(updatedUser)).thenReturn(updatedUser);
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.of(userHaveId));
+        when(userRepository.save(any(User.class)))
+                .thenReturn(userHaveId);
+
         User testResultUser = UserMapper
-                .toUser(userService.update(updatedUser.getId(), UserMapper.toUserDto(updatedUser)));
-        assertEquals(updatedUser, testResultUser);
+                .toUser(userService.update(userHaveId.getId(), UserMapper.toUserDto(userHaveId)));
+        assertEquals(userHaveId, testResultUser);
         verify(userRepository).findById(userHaveId.getId());
-        verify(userRepository).save(captor.capture());
-        User capturedUser = captor.getValue();
-        assertEquals(updatedUser, capturedUser);
+        assertEquals(userHaveId, testResultUser);
+        verifyNoMoreInteractions(userRepository);
+    }
+
+    @Test
+    void updateUserNull() {
+        userHaveId.setId(33L);
+        userHaveId.setName(null);
+        userHaveId.setEmail(null);
+
+        when(userRepository.findById(anyLong()))
+                .thenReturn(Optional.of(savedUser));
+        when(userRepository.save(any(User.class)))
+                .thenReturn(savedUser);
+
+        User testResultUser = UserMapper
+                .toUser(userService.update(userHaveId.getId(), UserMapper.toUserDto(userHaveId)));
+
+        assertNotNull(testResultUser);
+        assertNotEquals(userHaveId, testResultUser);
+        verify(userRepository).findById(userHaveId.getId());
         verifyNoMoreInteractions(userRepository);
     }
 
