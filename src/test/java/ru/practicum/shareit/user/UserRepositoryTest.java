@@ -79,7 +79,7 @@ class UserRepositoryTest {
                 .build();
         testEntityManager.persist(user2);
 
-        User foundUser = userRepository.findById(user2.getId()).orElseThrow();
+        final User foundUser = userRepository.findById(user2.getId()).orElseThrow();
         assertEquals(user2, foundUser);
     }
 

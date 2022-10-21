@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,10 +96,6 @@ class ItemControllerTest {
                 .text("Cool!")
                 .created(LocalDateTime.of(2022, 2, 14, 12, 0))
                 .build();
-    }
-
-    @AfterEach
-    void tearDown() {
     }
 
     @Test
