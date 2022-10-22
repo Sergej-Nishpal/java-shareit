@@ -20,9 +20,6 @@ class BookingMapperTest {
     private JacksonTester<Booking> jsonBooking;
 
     @Autowired
-    private JacksonTester<BookingDto> jsonBookingDto;
-
-    @Autowired
     private JacksonTester<BookingDtoForResponse> jsonBookingDtoForResponse;
 
     @Test
@@ -35,23 +32,6 @@ class BookingMapperTest {
                 .build();
 
         JsonContent<Booking> result = jsonBooking.write(booking);
-
-        assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
-        assertThat(result).extractingJsonPathStringValue("$.start").isEqualTo("2022-10-21T15:30:00");
-        assertThat(result).extractingJsonPathStringValue("$.end").isEqualTo("2022-10-21T19:30:00");
-        assertThat(result).extractingJsonPathStringValue("$.status").isEqualTo("WAITING");
-    }
-
-    @Test
-    void toBookingDto() throws IOException {
-        BookingDto bookingDto = BookingDto.builder()
-                .id(1L)
-                .start(LocalDateTime.of(2022, 10, 21, 15, 30, 0))
-                .end(LocalDateTime.of(2022, 10, 21, 19, 30, 0))
-                .status(BookingStatus.WAITING)
-                .build();
-
-        JsonContent<BookingDto> result = jsonBookingDto.write(bookingDto);
 
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
         assertThat(result).extractingJsonPathStringValue("$.start").isEqualTo("2022-10-21T15:30:00");

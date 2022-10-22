@@ -23,7 +23,7 @@ public class BookingController {
 
     @PostMapping
     @Validated({Marker.OnCreate.class})
-    public BookingDto addBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
+    public BookingDtoForResponse addBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
                                  @RequestBody @Valid BookingDto bookingDto) {
         log.debug("Добавление бронирования пользователем с id = {}.", userId);
         return bookingService.addBooking(userId, bookingDto);

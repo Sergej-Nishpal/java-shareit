@@ -7,7 +7,7 @@ import java.util.Collection;
 
 public interface BookingService {
 
-    BookingDto addBooking(Long userId, BookingDto bookingDto);
+    BookingDtoForResponse addBooking(Long userId, BookingDto bookingDto);
 
     BookingDtoForResponse approveBooking(long userId, long bookingId, boolean approved);
 

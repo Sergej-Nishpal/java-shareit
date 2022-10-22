@@ -18,17 +18,6 @@ public class BookingMapper {
                 .build();
     }
 
-    public static BookingDto toBookingDto(Booking booking) {
-        return BookingDto.builder()
-                .id(booking.getId())
-                .start(booking.getStart())
-                .end(booking.getEnd())
-                .status(booking.getStatus())
-                .itemId(booking.getItem().getId())
-                .bookerId(booking.getBooker().getId())
-                .build();
-    }
-
     public static BookingDtoForResponse toBookingDtoForResponse(Booking booking) {
         final Item item = booking.getItem();
         final User booker = booking.getBooker();

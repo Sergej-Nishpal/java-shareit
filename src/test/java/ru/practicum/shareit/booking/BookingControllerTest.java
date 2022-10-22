@@ -82,6 +82,8 @@ class BookingControllerTest {
                 .status(BookingStatus.WAITING).build();
 
         bookingDtoForResponse = BookingDtoForResponse.builder()
+                .id(1L)
+                .item(item1)
                 .booker(user2)
                 .start(LocalDateTime.now().plusDays(1))
                 .end(LocalDateTime.now().plusDays(3))
@@ -91,7 +93,7 @@ class BookingControllerTest {
     @Test
     void addBooking() throws Exception {
         when(bookingService.addBooking(anyLong(), any(BookingDto.class)))
-                .thenReturn(bookingDto);
+                .thenReturn(bookingDtoForResponse);
 
         mockMvc.perform(post("/bookings")
                         .header("X-Sharer-User-Id", 2L)
@@ -99,8 +101,8 @@ class BookingControllerTest {
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.itemId", is(item1.getId()), Long.class))
-                .andExpect(jsonPath("$.bookerId", is(user2.getId()), Long.class));
+                .andExpect(jsonPath("$.item.id", is(item1.getId()), Long.class))
+                .andExpect(jsonPath("$.booker.id", is(user2.getId()), Long.class));
 
         verify(bookingService, times(1))
                 .addBooking(anyLong(), any(BookingDto.class));
@@ -111,7 +113,7 @@ class BookingControllerTest {
         bookingDto.setStart(bookingDto.getEnd().plusDays(1));
 
         when(bookingService.addBooking(anyLong(), any(BookingDto.class)))
-                .thenReturn(bookingDto);
+                .thenReturn(bookingDtoForResponse);
 
         mockMvc.perform(post("/bookings")
                         .header("X-Sharer-User-Id", 2L)

@@ -31,7 +31,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public BookingDto addBooking(Long userId, BookingDto bookingDto) {
+    public BookingDtoForResponse addBooking(Long userId, BookingDto bookingDto) {
         final User booker = userService.getUser(userId);
         final Item item = itemService.getItem(bookingDto.getItemId());
         validateBookerIsOwner(booker, item);
@@ -45,7 +45,7 @@ public class BookingServiceImpl implements BookingService {
             throw new ItemUnavailableException(bookingDto.getItemId());
         }
 
-        return BookingMapper.toBookingDto(booking);
+        return BookingMapper.toBookingDtoForResponse(booking);
     }
 
     @Override

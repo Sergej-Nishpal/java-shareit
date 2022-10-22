@@ -111,11 +111,20 @@ class UserServiceImplTest {
     }
 
     @Test
-    void createIfUserExists() {
+    void checkIfUserExists() {
         when(userRepository.existsById(anyLong()))
-                .thenThrow(UserNotFoundException.class);
-        assertThrows(UserNotFoundException.class, () -> userService.validateUserExists(1L));
-        verify(userRepository).existsById(1L);
+                .thenReturn(true);
+        userService.validateUserExists(1L);
+        assertDoesNotThrow(() -> {
+        });
+    }
+
+    @Test
+    void checkIfUserNotExists() {
+        when(userRepository.existsById(anyLong()))
+                .thenReturn(false);
+        assertThrows(UserNotFoundException.class, () -> userService.validateUserExists(33L));
+        verify(userRepository).existsById(33L);
         verifyNoMoreInteractions(userRepository);
     }
 

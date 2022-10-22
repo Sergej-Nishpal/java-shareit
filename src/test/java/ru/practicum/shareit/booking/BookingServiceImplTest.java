@@ -90,9 +90,9 @@ class BookingServiceImplTest {
                 .thenReturn(item);
         when(bookingRepository.save(any(Booking.class)))
                 .thenReturn(booking);
-        BookingDto savedBookingDto = bookingService.addBooking(booker.getId(), bookingDto);
+        BookingDtoForResponse savedBookingDto = bookingService.addBooking(booker.getId(), bookingDto);
         assertNotNull(savedBookingDto);
-        assertEquals(savedBookingDto.getItemId(), bookingDto.getItemId());
+        assertEquals(savedBookingDto.getItem().getId(), bookingDto.getItemId());
     }
 
     @Test
