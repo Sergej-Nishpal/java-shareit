@@ -2,10 +2,12 @@ package ru.practicum.shareit.booking.dto;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
+@Component
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BookingMapper {
 
