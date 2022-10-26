@@ -2,6 +2,9 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -28,7 +31,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional
-    public BookingDto addBooking(Long userId, BookingDto bookingDto) {
+    public BookingDtoForResponse addBooking(Long userId, BookingDto bookingDto) {
         final User booker = userService.getUser(userId);
         final Item item = itemService.getItem(bookingDto.getItemId());
         validateBookerIsOwner(booker, item);
@@ -42,7 +45,7 @@ public class BookingServiceImpl implements BookingService {
             throw new ItemUnavailableException(bookingDto.getItemId());
         }
 
-        return BookingMapper.toBookingDto(booking);
+        return BookingMapper.toBookingDtoForResponse(booking);
     }
 
     @Override
@@ -74,18 +77,20 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Collection<BookingDtoForResponse> getBookings(long userId, String state) {
+    public Collection<BookingDtoForResponse> getBookings(long userId, String state, int from, int size) {
         final User booker = userService.getUser(userId);
-        final Collection<Booking> bookings = getBookingsOfBooker(booker, state);
+        final Pageable pageable = PageRequest.of(from / size, size);
+        final Page<Booking> bookings = getBookingsOfBooker(booker, state, pageable);
         return bookings.stream()
                 .map(BookingMapper::toBookingDtoForResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Collection<BookingDtoForResponse> getBookingsOfOwner(long userId, String state) {
+    public Collection<BookingDtoForResponse> getBookingsOfOwner(long userId, String state, int from, int size) {
         final User owner = userService.getUser(userId);
-        final Collection<Booking> bookings = getBookingsOfOwner(owner, state);
+        final Pageable pageable = PageRequest.of(from / size, size);
+        final Page<Booking> bookings = getBookingsOfOwner(owner, state, pageable);
         return bookings.stream()
                 .map(BookingMapper::toBookingDtoForResponse)
                 .collect(Collectors.toList());
@@ -94,7 +99,7 @@ public class BookingServiceImpl implements BookingService {
     private Booking getBooking(long id) {
         return bookingRepository.findById(id).orElseThrow(() -> {
             log.error("Бронирование с id = {} не найдено!", id);
-            return new BookingNotFoundException(id);
+            throw new BookingNotFoundException(id);
         });
     }
 
@@ -133,40 +138,44 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private Collection<Booking> getBookingsOfBooker(User booker, String state) {
+    private Page<Booking> getBookingsOfBooker(User booker, String state, Pageable pageable) {
         switch (state) {
             case "ALL":
-                return bookingRepository.getAllByBookerOrderByStartDesc(booker);
+                return bookingRepository.getAllByBookerOrderByStartDesc(booker, pageable);
             case "CURRENT":
-                return bookingRepository.getAllCurrentByBookerOrderByStartDesc(booker);
+                return bookingRepository.getAllCurrentByBookerOrderByStartDesc(booker, pageable);
             case "PAST":
-                return bookingRepository.getAllPastByBookerOrderByStartDesc(booker);
+                return bookingRepository.getAllPastByBookerOrderByStartDesc(booker, pageable);
             case "FUTURE":
-                return bookingRepository.getAllFutureByBookerOrderByStartDesc(booker);
+                return bookingRepository.getAllFutureByBookerOrderByStartDesc(booker, pageable);
             case "WAITING":
-                return bookingRepository.getAllByBookerAndStatusOrderByStartDesc(booker, BookingStatus.WAITING);
+                return bookingRepository.getAllByBookerAndStatusOrderByStartDesc(booker, BookingStatus.WAITING,
+                        pageable);
             case "REJECTED":
-                return bookingRepository.getAllByBookerAndStatusOrderByStartDesc(booker, BookingStatus.REJECTED);
+                return bookingRepository.getAllByBookerAndStatusOrderByStartDesc(booker, BookingStatus.REJECTED,
+                        pageable);
             default:
                 log.error("Передан неизвестный статус бронирования: {}", state);
                 throw new UnknownBookingStateException("Unknown state: " + state);
         }
     }
 
-    private Collection<Booking> getBookingsOfOwner(User owner, String state) {
+    private Page<Booking> getBookingsOfOwner(User owner, String state, Pageable pageable) {
         switch (state) {
             case "ALL":
-                return bookingRepository.getAllByItemOwnerOrderByStartDesc(owner);
+                return bookingRepository.getAllByItemOwnerOrderByStartDesc(owner, pageable);
             case "CURRENT":
-                return bookingRepository.getAllCurrentByItemOwnerOrderByStartDesc(owner);
+                return bookingRepository.getAllCurrentByItemOwnerOrderByStartDesc(owner, pageable);
             case "PAST":
-                return bookingRepository.getAllPastByItemOwnerOrderByStartDesc(owner);
+                return bookingRepository.getAllPastByItemOwnerOrderByStartDesc(owner, pageable);
             case "FUTURE":
-                return bookingRepository.getAllFutureByItemOwnerOrderByStartDesc(owner);
+                return bookingRepository.getAllFutureByItemOwnerOrderByStartDesc(owner, pageable);
             case "WAITING":
-                return bookingRepository.getAllByItemOwnerAndStatusOrderByStartDesc(owner, BookingStatus.WAITING);
+                return bookingRepository.getAllByItemOwnerAndStatusOrderByStartDesc(owner, BookingStatus.WAITING,
+                        pageable);
             case "REJECTED":
-                return bookingRepository.getAllByItemOwnerAndStatusOrderByStartDesc(owner, BookingStatus.REJECTED);
+                return bookingRepository.getAllByItemOwnerAndStatusOrderByStartDesc(owner, BookingStatus.REJECTED,
+                        pageable);
             default:
                 log.error("Передан неизвестный статус бронирования: {}", state);
                 throw new UnknownBookingStateException("Unknown state: " + state);

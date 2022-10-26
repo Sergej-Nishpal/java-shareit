@@ -20,6 +20,7 @@ public class ItemDtoForResponse {
     private BookingDtoForItem lastBooking;
     private BookingDtoForItem nextBooking;
     private Collection<CommentDtoForResponse> comments;
+    private Long requestId;
 
     @Getter
     @Setter
