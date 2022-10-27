@@ -21,22 +21,22 @@ import ru.practicum.shareit.validation.startend.StartEndDated;
 @StartBeforeEndValid(start = "start", end = "end")
 public class BookingDto implements StartEndDated {
 
-	private Long id;
+    private Long id;
 
-	@NotNull(groups = Marker.OnCreate.class)
-	private Long itemId;
+    @NotNull(groups = Marker.OnCreate.class)
+    private Long itemId;
 
-	private Long bookerId;
+    private Long bookerId;
 
-	@NotNull(groups = Marker.OnCreate.class)
-	@DateTimeFormat(pattern = "YYYY-MM-DD'T'HH:mm:ss")
-	@FutureOrPresent
-	private LocalDateTime start;
+    @NotNull(groups = Marker.OnCreate.class)
+    @DateTimeFormat(pattern = "YYYY-MM-DD'T'HH:mm:ss")
+    @FutureOrPresent
+    private LocalDateTime start;
 
-	@NotNull(groups = Marker.OnCreate.class)
-	@DateTimeFormat(pattern = "YYYY-MM-DD'T'HH:mm:ss")
-	@FutureOrPresent
-	private LocalDateTime end;
+    @NotNull(groups = Marker.OnCreate.class)
+    @DateTimeFormat(pattern = "YYYY-MM-DD'T'HH:mm:ss")
+    @FutureOrPresent
+    private LocalDateTime end;
 
-	private BookingStatus status;
+    private BookingStatus status;
 }

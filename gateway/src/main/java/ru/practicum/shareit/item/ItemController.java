@@ -31,15 +31,15 @@ public class ItemController {
     @PatchMapping("/{itemId}")
     @Validated({Marker.OnUpdate.class})
     public ResponseEntity<Object> update(@RequestHeader("X-Sharer-User-Id") long userId,
-                          @PathVariable long itemId,
-                          @RequestBody @Valid ItemDto itemDto) {
+                                         @PathVariable long itemId,
+                                         @RequestBody @Valid ItemDto itemDto) {
         log.debug("Пользователь с id = {} обновляет вещь.", userId);
         return itemClient.update(userId, itemId, itemDto);
     }
 
     @GetMapping("/{itemId}")
     public ResponseEntity<Object> getById(@RequestHeader("X-Sharer-User-Id") long userId,
-                                      @PathVariable long itemId) {
+                                          @PathVariable long itemId) {
         log.debug("Пользователь с id = {} запрашивает вещь с id = {}.", userId, itemId);
         return itemClient.getById(userId, itemId);
     }
@@ -52,15 +52,15 @@ public class ItemController {
 
     @GetMapping("/search")
     public ResponseEntity<Object> getByText(@RequestHeader("X-Sharer-User-Id") long userId,
-                                         @RequestParam(name = "text") String text) {
+                                            @RequestParam(name = "text") String text) {
         log.debug("Пользователь с id = {} ищет вещь по запросу \"{}\".", userId, text);
         return itemClient.getByText(userId, text);
     }
 
     @PostMapping("/{itemId}/comment")
     public ResponseEntity<Object> addComment(@PathVariable("itemId") Long itemId,
-                                            @Valid @RequestBody CommentDto commentCreateDto,
-                                            @RequestHeader("X-Sharer-User-Id") Long userId) {
+                                             @Valid @RequestBody CommentDto commentCreateDto,
+                                             @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.debug("Пользователь с id = {} добавляет комментарий к вещи с id = {}.", userId, itemId);
         return itemClient.addComment(commentCreateDto, itemId, userId);
     }

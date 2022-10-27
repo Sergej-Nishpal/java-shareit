@@ -40,7 +40,7 @@ public class UserController {
     @PatchMapping("/{id}")
     @Validated({Marker.OnUpdate.class})
     public ResponseEntity<Object> update(@PathVariable("id") Long userId,
-                          @RequestBody @Valid UserDto userDto) {
+                                         @RequestBody @Valid UserDto userDto) {
         log.debug("Запрос обновления пользователя с id = {}.", userId);
         return userClient.update(userId, userDto);
     }

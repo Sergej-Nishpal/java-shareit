@@ -35,17 +35,17 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public ResponseEntity<Object> getItemRequestsOfOther(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                                        @PositiveOrZero @RequestParam(name = "from",
-                                                                                defaultValue = "0") Integer from,
-                                                                        @Positive @RequestParam(name = "size",
-                                                                                defaultValue = "10") Integer size) {
+                                                         @PositiveOrZero @RequestParam(name = "from",
+                                                                 defaultValue = "0") Integer from,
+                                                         @Positive @RequestParam(name = "size",
+                                                                 defaultValue = "10") Integer size) {
         log.debug("Получение всех запросов пользователей, кроме id = {}", userId);
         return itemRequestClient.getAllRequestsOfOther(userId, from, size);
     }
 
     @GetMapping("/{requestId}")
     public ResponseEntity<Object> getItemRequest(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                    @PathVariable("requestId") Long requestId) {
+                                                 @PathVariable("requestId") Long requestId) {
         log.debug("Получение пользователем с id = {} запроса с id = {}", userId, requestId);
         return itemRequestClient.getItemRequest(userId, requestId);
     }
