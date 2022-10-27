@@ -17,7 +17,7 @@ class ShareItTests {
 
     @Test
     void testApplicationRun() {
-        ShareItApp.main(new String[]{});
+        ShareItServer.main(new String[]{});
         assertDoesNotThrow(() -> {
         });
     }
