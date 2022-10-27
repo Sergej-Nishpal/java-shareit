@@ -7,14 +7,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.validation.ConstraintViolationException;
-
 @Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
 
-    @ExceptionHandler({ConstraintViolationException.class, ItemUnavailableException.class,
-            UnknownBookingStateException.class, BookingStatusException.class, IncorrectCommentException.class})
+    @ExceptionHandler({ItemUnavailableException.class, UnknownBookingStateException.class,
+            BookingStatusException.class, IncorrectCommentException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidation(final RuntimeException e) {
         log.error("400 - Ошибка валидации: {} ", e.getMessage(), e);

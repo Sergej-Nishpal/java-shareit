@@ -2,18 +2,13 @@ package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestDtoForResponse;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 import java.util.Collection;
 
 @Slf4j
-@Validated
 @RestController
 @RequestMapping(path = "/requests")
 @RequiredArgsConstructor
@@ -22,7 +17,7 @@ public class ItemRequestController {
 
     @PostMapping
     public ItemRequestDtoForResponse addItemRequest(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                    @RequestBody @Valid ItemRequestDto itemRequestDto) {
+                                                    @RequestBody ItemRequestDto itemRequestDto) {
         log.debug("Создание запроса пользователем с id = {}", userId);
         return itemRequestService.addItemRequest(userId, itemRequestDto);
     }
@@ -35,9 +30,9 @@ public class ItemRequestController {
 
     @GetMapping("/all")
     public Collection<ItemRequestDtoForResponse> getItemRequestsOfOther(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                                        @PositiveOrZero @RequestParam(name = "from",
+                                                                        @RequestParam(name = "from",
                                                                                 defaultValue = "0") Integer from,
-                                                                        @Positive @RequestParam(name = "size",
+                                                                        @RequestParam(name = "size",
                                                                                 defaultValue = "10") Integer size) {
         log.debug("Получение всех запросов пользователей, кроме id = {}", userId);
         return itemRequestService.getAllRequestsOfOther(userId, from, size);
