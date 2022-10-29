@@ -11,11 +11,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class ErrorHandler {
 
-    @ExceptionHandler({ItemUnavailableException.class, UnknownBookingStateException.class,
-            BookingStatusException.class, IncorrectCommentException.class})
+    @ExceptionHandler({ItemUnavailableException.class, BookingStatusException.class, IncorrectCommentException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidation(final RuntimeException e) {
-        log.error("400 - Ошибка валидации: {} ", e.getMessage(), e);
+        log.error("400 - Ошибка при обработке входных данных: {} ", e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 

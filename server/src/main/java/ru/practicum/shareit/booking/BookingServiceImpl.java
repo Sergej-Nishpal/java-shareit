@@ -139,46 +139,42 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private Page<Booking> getBookingsOfBooker(User booker, String state, Pageable pageable) {
-        switch (state) {
-            case "ALL":
-                return bookingRepository.getAllByBookerOrderByStartDesc(booker, pageable);
-            case "CURRENT":
-                return bookingRepository.getAllCurrentByBookerOrderByStartDesc(booker, pageable);
-            case "PAST":
-                return bookingRepository.getAllPastByBookerOrderByStartDesc(booker, pageable);
-            case "FUTURE":
-                return bookingRepository.getAllFutureByBookerOrderByStartDesc(booker, pageable);
-            case "WAITING":
-                return bookingRepository.getAllByBookerAndStatusOrderByStartDesc(booker, BookingStatus.WAITING,
-                        pageable);
-            case "REJECTED":
-                return bookingRepository.getAllByBookerAndStatusOrderByStartDesc(booker, BookingStatus.REJECTED,
-                        pageable);
-            default:
-                log.error("Передан неизвестный статус бронирования: {}", state);
-                throw new UnknownBookingStateException("Unknown state: " + state);
+        if ("ALL".equals(state)) {
+            return bookingRepository.getAllByBookerOrderByStartDesc(booker, pageable);
+        } else if ("CURRENT".equals(state)) {
+            return bookingRepository.getAllCurrentByBookerOrderByStartDesc(booker, pageable);
+        } else if ("PAST".equals(state)) {
+            return bookingRepository.getAllPastByBookerOrderByStartDesc(booker, pageable);
+        } else if ("FUTURE".equals(state)) {
+            return bookingRepository.getAllFutureByBookerOrderByStartDesc(booker, pageable);
+        } else if ("WAITING".equals(state)) {
+            return bookingRepository.getAllByBookerAndStatusOrderByStartDesc(booker, BookingStatus.WAITING,
+                    pageable);
+        } else if ("REJECTED".equals(state)) {
+            return bookingRepository.getAllByBookerAndStatusOrderByStartDesc(booker, BookingStatus.REJECTED,
+                    pageable);
+        } else {
+            return Page.empty();
         }
     }
 
     private Page<Booking> getBookingsOfOwner(User owner, String state, Pageable pageable) {
-        switch (state) {
-            case "ALL":
-                return bookingRepository.getAllByItemOwnerOrderByStartDesc(owner, pageable);
-            case "CURRENT":
-                return bookingRepository.getAllCurrentByItemOwnerOrderByStartDesc(owner, pageable);
-            case "PAST":
-                return bookingRepository.getAllPastByItemOwnerOrderByStartDesc(owner, pageable);
-            case "FUTURE":
-                return bookingRepository.getAllFutureByItemOwnerOrderByStartDesc(owner, pageable);
-            case "WAITING":
-                return bookingRepository.getAllByItemOwnerAndStatusOrderByStartDesc(owner, BookingStatus.WAITING,
-                        pageable);
-            case "REJECTED":
-                return bookingRepository.getAllByItemOwnerAndStatusOrderByStartDesc(owner, BookingStatus.REJECTED,
-                        pageable);
-            default:
-                log.error("Передан неизвестный статус бронирования: {}", state);
-                throw new UnknownBookingStateException("Unknown state: " + state);
+        if ("ALL".equals(state)) {
+            return bookingRepository.getAllByItemOwnerOrderByStartDesc(owner, pageable);
+        } else if ("CURRENT".equals(state)) {
+            return bookingRepository.getAllCurrentByItemOwnerOrderByStartDesc(owner, pageable);
+        } else if ("PAST".equals(state)) {
+            return bookingRepository.getAllPastByItemOwnerOrderByStartDesc(owner, pageable);
+        } else if ("FUTURE".equals(state)) {
+            return bookingRepository.getAllFutureByItemOwnerOrderByStartDesc(owner, pageable);
+        } else if ("WAITING".equals(state)) {
+            return bookingRepository.getAllByItemOwnerAndStatusOrderByStartDesc(owner, BookingStatus.WAITING,
+                    pageable);
+        } else if ("REJECTED".equals(state)) {
+            return bookingRepository.getAllByItemOwnerAndStatusOrderByStartDesc(owner, BookingStatus.REJECTED,
+                    pageable);
+        } else {
+            return Page.empty();
         }
     }
 }

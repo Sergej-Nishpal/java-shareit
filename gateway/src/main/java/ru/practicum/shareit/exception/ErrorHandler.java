@@ -12,10 +12,10 @@ import javax.validation.ConstraintViolationException;
 @RestControllerAdvice
 public class ErrorHandler {
 
-    @ExceptionHandler({ConstraintViolationException.class})
+    @ExceptionHandler({ConstraintViolationException.class, UnknownBookingStateException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidation(final RuntimeException e) {
-        log.error("400 - Ошибка валидации: {} ", e.getMessage(), e);
+        log.error("400 - Ошибка валидации входных данных: {} ", e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 }

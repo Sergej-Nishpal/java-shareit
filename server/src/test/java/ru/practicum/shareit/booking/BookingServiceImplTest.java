@@ -245,13 +245,6 @@ class BookingServiceImplTest {
             assertNotNull(bookings);
             assertEquals(1, bookings.size());
         }
-
-        final Long bookerId = booker.getId();
-        final UnknownBookingStateException exception = assertThrows(UnknownBookingStateException.class,
-                () -> bookingService.getBookings(bookerId, "UNKNOWN", 0, 1));
-        String expectedMessage = "Unknown state: UNKNOWN";
-        String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(expectedMessage));
     }
 
     @Test
@@ -280,12 +273,5 @@ class BookingServiceImplTest {
             assertNotNull(bookings);
             assertEquals(1, bookings.size());
         }
-
-        final Long ownerId = owner.getId();
-        final UnknownBookingStateException exception = assertThrows(UnknownBookingStateException.class,
-                () -> bookingService.getBookingsOfOwner(ownerId, "UNKNOWN", 0, 1));
-        String expectedMessage = "Unknown state: UNKNOWN";
-        String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(expectedMessage));
     }
 }
